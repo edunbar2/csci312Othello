@@ -25,7 +25,7 @@ public class Game {
 
 
     public static void runGame() {
-        playerTimer = 0.000;
+        playerTimer = 0.0;
         opponentTimer = 0.0;
         //timer for individual moves
         double moveTime;
