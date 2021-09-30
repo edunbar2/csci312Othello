@@ -54,8 +54,9 @@ public class Game {
             gameboard.printBoard();
             if (currentPlayer == player) {
                 moveTime = System.currentTimeMillis()/1000.0;
-                Stack<Move> moves = gameboard.generateMoves(myColor);//int move = getInput("What move do you want to make?");
-                int move = moves.elementAt(ran.nextInt(moves.size())).getPosition();
+                Stack<Move> moves = gameboard.generateMoves(myColor);
+                int move = getInput("What move do you want to make?");
+                //int move = moves.elementAt(ran.nextInt(moves.size())).getPosition();
                 moveMade = gameboard.applyMove(move, myColor, moves);
                 moveTime = (System.currentTimeMillis()/1000.0)-moveTime;
                 playerTimer += moveTime; //add move time to timer
