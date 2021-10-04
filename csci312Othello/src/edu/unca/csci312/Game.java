@@ -50,7 +50,7 @@ public class Game {
         else
             currentPlayer = opponent;
 
-        while (!gameOver()) {
+        while (!gameOver(gameboard)) {
             System.out.printf("C Player time: %f\n", playerTimer);
             System.out.printf("C AI time: %f\n", opponentTimer);
 
@@ -68,13 +68,11 @@ public class Game {
                 moveMade = gameboard.applyMove(move, myColor, moves);
                 moveTime = (System.currentTimeMillis()/1000.0)-moveTime;
                 playerTimer += moveTime; //add move time to timer
-                System.out.printf("C %d", gameboard.getBlackPieces());
+                System.out.printf("C %d\n", gameboard.getBlackPieces());
 
             }else if(currentPlayer == opponent) {
                 moveTime = System.currentTimeMillis()/1000.0;
-                Stack<Move> moves = gameboard.generateMoves(opponentColor);
-                int move = moves.elementAt(ran.nextInt(moves.size())).getPosition();
-                moveMade = gameboard.applyMove(move, opponentColor, moves);
+                moveMade =getAIMove();
                 moveTime = (System.currentTimeMillis()/1000.0)-moveTime;
                 opponentTimer += moveTime; //add time taken to timer
             }
@@ -86,22 +84,22 @@ public class Game {
 
         }
         gameboard.printBoard();
-        getWinner();
+        endGame();
     }
 
-    public static boolean gameOver() {
+    public static boolean gameOver(Board board) {
         boolean endGame = false;
         int count = 0;
         for(int i = 0; i < 100; i++) {
-            if(gameboard.getBoard()[i] == 0) {
+            if(board.getBoard()[i] == 0) {
                 count++;
             }
         }
 
-        if(count == 0 || gameboard.getWhitePieces() == 0 || gameboard.getBlackPieces() == 0)
+        if(count == 0 || board.getWhitePieces() == 0 || board.getBlackPieces() == 0)
             endGame = true;
-        Stack<Move> tempBlack = gameboard.generateMoves(Black);
-        Stack<Move> tempWhite = gameboard.generateMoves(White);
+        Stack<Move> tempBlack = board.generateMoves(Black);
+        Stack<Move> tempWhite = board.generateMoves(White);
         if(tempBlack.pop().isPass() && tempWhite.pop().isPass())
             endGame = true;
         if(playerTimer >= 90.0 || opponentTimer >= 90.0)
@@ -135,8 +133,8 @@ public class Game {
     public static int interpretInput(String input) {
 
         if(input.equals("n")){
-            if(gameOver()){
-               getWinner();
+            if(gameOver(gameboard)){
+               endGame();
             }
         }
         int ret = 0;
@@ -212,8 +210,6 @@ public class Game {
             return -1;
         }
 
-
-
         StringBuilder temp = new StringBuilder();
         for (int i = 1; i < input.length(); i++) {
             if(input.charAt(i) >= '0' && input.charAt(i) <= '9')
@@ -235,21 +231,88 @@ public class Game {
         return isPlayer;
     }
 
-    public static void getWinner(){
+    public static int getCurrentPlayer(){
+        if(currentPlayer == player) return myColor;
+        else return opponentColor;
+    }
+
+
+    public static void endGame(){
         System.out.println("Game over!" );
         int remainingBlack = gameboard.getBlackPieces();
         int remainingWhite = gameboard.getWhitePieces();
         System.out.println("Black pieces remaining: " + remainingBlack);
-        if(playerTimer >= 90.0)
-            System.out.println(opponentColor + " Wins!");
-        else if(opponentTimer >= 90.0)
-            System.out.println(myColor + " Wins");
-        else if(remainingBlack > remainingWhite)
-            System.out.println("Black wins!");
-        else
-            System.out.println("White wins!");
+        int winner = getWinner(remainingBlack, remainingWhite);
+        if(winner == Black) System.out.println("Black Wins!");
+        else System.out.println("White wins!");
         exit(0);
     }
+
+    public static int getWinner(int blackPieces, int whitePieces) {
+
+        if (playerTimer >= 90.0)
+            return opponentColor;
+        else if (opponentTimer >= 90.0)
+            return myColor;
+        else if (blackPieces > whitePieces)
+            return Black;
+        else
+            return White;
+    }
+
+    public static boolean getAIMove(){
+        Random ran = new Random();
+        boolean moveMade;
+        Board tempBoard = new Board(gameboard);
+        Stack<Move> moves = tempBoard.generateMoves(opponentColor);
+        int[] bestmove = new int[moves.size()];
+        for(int i = 0; i < moves.size(); i++){
+            bestmove[i] = minimax(tempBoard, 20, true);
+        }
+        int index = 0;
+        int currentBest = bestmove[0];
+        for(int i = 0; i < bestmove.length; i++){
+            if(Math.max(currentBest, bestmove[i]) > currentBest){
+                index = i;
+            }
+        }
+
+         // apply final move and return
+        moveMade = gameboard.applyMove(index, opponentColor, moves);
+        return moveMade;
+    }
+
+    private static int minimax(Board copy, int depth, boolean maximizingPlayer){
+
+        if(depth == 0 || gameOver(copy)){
+           return copy.evaluate(copy);
+        }
+        if(maximizingPlayer){
+            int maxEval = Integer.MIN_VALUE;
+
+            Stack<Move> moves = copy.generateMoves(opponentColor);
+            for(int i = 0; i < moves.size(); i++){
+                Board tempBoard = new Board(copy);
+                tempBoard.applyMove(moves.elementAt(i).getPosition(), opponentColor, moves );
+                int eval = minimax(tempBoard, depth - 1, false);
+                maxEval = Integer.max(maxEval, eval);
+            }
+            return maxEval;
+        } else {
+            int minEval = Integer.MAX_VALUE;
+
+            Stack<Move> moves = copy.generateMoves(myColor);
+            for (int i = 0; i < moves.size(); i++) {
+                Board tempBoard = new Board(copy);
+                tempBoard.applyMove(moves.elementAt(i).getPosition(), myColor, moves);
+                int eval = minimax(tempBoard, depth - 1, true);
+                minEval = Integer.min(minEval, eval);
+            }
+            return minEval;
+        }
+    }
+
+
 
 }
 

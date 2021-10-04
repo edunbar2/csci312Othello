@@ -4,6 +4,21 @@ import java.util.Stack;
 
 public class Board {
 
+    //pressuremap
+    private static final int[] map =
+            {
+                    -20,-20,-20,-20,-20,-20,-20,-20,-20,-20
+                    -20, 12,  2,  8,  8 , 8 , 8 , 2 ,12,-20
+                    -20,  2,  1,  4,  4,  4,  4,  1,  2,-20
+                    -20,  8,  4,  6,  6,  6,  6,  4,  8,-20
+                    -20,  8,  4,  6,  7,  7,  6,  4,  8,-20
+                    -20,  8,  4,  6,  7,  7,  6,  4,  8,-20
+                    -20,  8,  4,  6,  6,  6,  6,  4,  8,-20
+                    -20,  2,  1,  4,  4 , 4,  4,  1,  2,-20
+                    -20, 12,  2,  8,  8,  8,  8,  2, 12,-20
+                    -20,-20,-20,-20,-20,-20,-20,-20,-20,-20
+            };
+
     // constants
     private static final int startWhite = 44; // tile D4
     private static final int startBlack = 45; // tile D5
@@ -16,11 +31,14 @@ public class Board {
     // instance variables
     private int[] board;
     private int playerColor;
+    private int opponentColor;
 
 
     // constructors
     public Board(int playerColor) {
         this.playerColor = playerColor;
+        if(this.playerColor == White) this.opponentColor = Black;
+        else this.opponentColor =White;
         this.board = new int[100];
         initialize(this.playerColor);
         if(this.playerColor == Black){
@@ -531,8 +549,42 @@ public class Board {
         return count;
     }
 
-    private int evaluate() {
-        return 0;
+    /**
+     * This function takes in the board to be evaluated and adds up the score of the player.
+     * This score is generated using the equation (Value of Board * Number of Moves) / Number of Opponent Moves
+     * @param currentBoard to be evaluated
+     * @return value of board
+     */
+    public int evaluate(Board currentBoard) {
+        int boardValue = 0;
+        for(int i = 11; i < 89; i++){ // get value of the current board
+            if(i%10 != 0 && (i+1)%10 != 0){
+                if(currentBoard.getBoard()[i] == opponent)
+                    boardValue += map[i];
+            }
+        }
+         // get other data
+        int numMoves;
+        int opponentMoves;
+        if(playerColor == White){
+            numMoves = generateMoves(Black).size();
+            opponentMoves = generateMoves(White).size();
+        }else{
+            numMoves = generateMoves(White).size();
+            opponentMoves = generateMoves(Black).size();
+        }
+
+
+         // score equals boardValue * number of moves / number of opponent moves.
+        int score = (boardValue * numMoves)/opponentMoves;
+        if(Game.gameOver(currentBoard)){
+            int blackPieces = currentBoard.getBlackPieces();
+            int whitePieces = currentBoard.getWhitePieces();
+            if(Game.getWinner(blackPieces, whitePieces) == opponentColor) score += 10000000;
+            else score -= 10000000;
+        }
+        System.out.println("C Score is: " + score);
+        return score;
     }
 
     public void printBoard() {
