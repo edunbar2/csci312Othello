@@ -16,23 +16,23 @@ public class Board {
     // instance variables
     private int[] board;
     private int playerColor;
-    private int blackPieces;
-    private int whitePieces;
+
 
     // constructors
     public Board(int playerColor) {
         this.playerColor = playerColor;
         this.board = new int[100];
-        this.blackPieces = 2;
-        this.whitePieces = 2;
         initialize(this.playerColor);
+        if(this.playerColor == Black){
+            System.out.println("R B");
+        }else if(this.playerColor == White){
+            System.out.println("R W");
+        }
     }
 
     public Board(Board copy) {
         this.playerColor = copy.getPlayerColor();
         this.board = copy.getBoard();
-        this.blackPieces = copy.blackPieces;
-        this.whitePieces = copy.whitePieces;
     }
 
     /**
