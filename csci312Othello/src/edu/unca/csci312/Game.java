@@ -5,6 +5,8 @@ import java.util.Random;
 import java.util.Scanner;
 import java.util.Stack;
 
+import static java.lang.System.exit;
+
 public class Game {
     // constants
     public static final int player = 1;
@@ -57,6 +59,11 @@ public class Game {
                 moveTime = System.currentTimeMillis()/1000.0;
                 Stack<Move> moves = gameboard.generateMoves(myColor);
                 int move = getInput("What move do you want to make?");
+                if(move == -2){
+                    Move node = new Move("P");
+                    moves.push(node);
+                    move = 0;
+                }
                 //int move = moves.elementAt(ran.nextInt(moves.size())).getPosition();
                 moveMade = gameboard.applyMove(move, myColor, moves);
                 moveTime = (System.currentTimeMillis()/1000.0)-moveTime;
@@ -137,6 +144,12 @@ public class Game {
      * @return integer representation of input
      */
     public static int interpretInput(String input) {
+
+        if(input.equals("n")){
+            if(gameOver()){
+                exit(0);
+            }
+        }
         int ret = 0;
         // check for comment
         if (input.charAt(0) == 'C')
@@ -153,6 +166,10 @@ public class Game {
         }
 
         if(input.charAt(0) == 'B' && isCurrentPlayer(Black)){
+
+            if(input.equals("B")){
+                return -2; // tell system to pass
+            }
             String interp = input.substring(2,input.length()).toUpperCase();
             // interpret movements
             if (interp.charAt(0) == 'A')
@@ -176,6 +193,9 @@ public class Game {
                 return -1;
             }
         }else if(input.charAt(0) == 'W' && isCurrentPlayer(White)){
+            if(input.equals("W")){
+                return -2; // tell system to pass
+            }
             String interp = input.substring(1, input.length());
             // interpret movements
             if (interp.charAt(0) == 'A')
