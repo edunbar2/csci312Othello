@@ -1,5 +1,6 @@
 package edu.unca.csci312;
 
+import java.util.Locale;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.Stack;
@@ -122,7 +123,7 @@ public class Game {
             ret = interpretInput(temp);
         }
         if(ret == 0){
-            System.out.println("Comment Logged");
+            System.out.println("C Comment Logged");
             ret = getInput(question);
         }
         return ret;
@@ -152,7 +153,7 @@ public class Game {
         }
 
         if(input.charAt(0) == 'B' && isCurrentPlayer(Black)){
-            String interp = input.substring(2,input.length());
+            String interp = input.substring(2,input.length()).toUpperCase();
             // interpret movements
             if (interp.charAt(0) == 'A')
                 ret = 1;
@@ -197,6 +198,9 @@ public class Game {
                 System.out.println("Invalid input, please try again.\n");
                 return -1;
             }
+        }else{
+            System.out.println("C Invalid input, please try again.\n");
+            return -1;
         }
 
 
