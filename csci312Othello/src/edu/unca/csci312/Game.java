@@ -48,18 +48,19 @@ public class Game {
             currentPlayer = opponent;
 
         while (!gameOver()) {
-            System.out.printf("(C) Player time: %f\n", playerTimer);
-            System.out.printf("(C) Opponent time: %f\n", opponentTimer);
+            System.out.printf("C Player time: %f\n", playerTimer);
+            System.out.printf("C AI time: %f\n", opponentTimer);
 
             gameboard.printBoard();
             if (currentPlayer == player) {
                 moveTime = System.currentTimeMillis()/1000.0;
-                Stack<Move> moves = gameboard.generateMoves(myColor);//int move = getInput("What move do you want to make?");
-                int move = moves.elementAt(ran.nextInt(moves.size())).getPosition();
+                Stack<Move> moves = gameboard.generateMoves(myColor);
+                int move = getInput("What move do you want to make?");
+                //int move = moves.elementAt(ran.nextInt(moves.size())).getPosition();
                 moveMade = gameboard.applyMove(move, myColor, moves);
                 moveTime = (System.currentTimeMillis()/1000.0)-moveTime;
                 playerTimer += moveTime; //add move time to timer
-                System.out.printf("(C) %d", gameboard.getBlackPieces());
+                System.out.printf("C %d", gameboard.getBlackPieces());
 
             }else if(currentPlayer == opponent) {
                 moveTime = System.currentTimeMillis()/1000.0;
@@ -106,8 +107,8 @@ public class Game {
         Stack<Move> tempWhite = gameboard.generateMoves(White);
         if(tempBlack.pop().isPass() && tempWhite.pop().isPass())
             endGame = true;
-        //if(playerTimer >= 90.0 || opponentTimer >= 90.0)
-        //endGame = true;
+        if(playerTimer >= 90.0 || opponentTimer >= 90.0)
+        endGame = true;
 
         return endGame;
     }
@@ -137,7 +138,7 @@ public class Game {
     public static int interpretInput(String input) {
         int ret = 0;
         // check for comment
-        if (input.length() >= 3 && input.substring(0, 2).equals("(C)"))
+        if (input.charAt(0) == 'C')
             return ret;
 
         // check for initialization keys
@@ -150,27 +151,55 @@ public class Game {
                 return White; // initialize to white
         }
 
-        // interpret movements
-        if (input.charAt(0) == 'A')
-            ret = 1;
-        else if (input.charAt(0) == 'B')
-            ret = 2;
-        else if (input.charAt(0) == 'C')
-            ret = 3;
-        else if (input.charAt(0) == 'D')
-            ret = 4;
-        else if (input.charAt(0) == 'E')
-            ret = 5;
-        else if (input.charAt(0) == 'F')
-            ret = 6;
-        else if (input.charAt(0) == 'G')
-            ret = 7;
-        else if (input.charAt(0) == 'H')
-            ret = 8;
-        else {
-            System.out.println("Invalid input, please try again.\n");
-            return -1;
+        if(input.charAt(0) == 'B' && isCurrentPlayer(Black)){
+            String interp = input.substring(2,input.length());
+            // interpret movements
+            if (interp.charAt(0) == 'A')
+                ret = 1;
+            else if (interp.charAt(0) == 'B')
+                ret = 2;
+            else if (interp.charAt(0) == 'C')
+                ret = 3;
+            else if (interp.charAt(0) == 'D')
+                ret = 4;
+            else if (interp.charAt(0) == 'E')
+                ret = 5;
+            else if (interp.charAt(0) == 'F')
+                ret = 6;
+            else if (interp.charAt(0) == 'G')
+                ret = 7;
+            else if (interp.charAt(0) == 'H')
+                ret = 8;
+            else {
+                System.out.println("Invalid input, please try again.\n");
+                return -1;
+            }
+        }else if(input.charAt(0) == 'W' && isCurrentPlayer(White)){
+            String interp = input.substring(1, input.length());
+            // interpret movements
+            if (interp.charAt(0) == 'A')
+                ret = 1;
+            else if (interp.charAt(0) == 'B')
+                ret = 2;
+            else if (interp.charAt(0) == 'C')
+                ret = 3;
+            else if (interp.charAt(0) == 'D')
+                ret = 4;
+            else if (interp.charAt(0) == 'E')
+                ret = 5;
+            else if (interp.charAt(0) == 'F')
+                ret = 6;
+            else if (interp.charAt(0) == 'G')
+                ret = 7;
+            else if (interp.charAt(0) == 'H')
+                ret = 8;
+            else {
+                System.out.println("Invalid input, please try again.\n");
+                return -1;
+            }
         }
+
+
 
         StringBuilder temp = new StringBuilder();
         for (int i = 1; i < input.length(); i++) {
@@ -179,6 +208,18 @@ public class Game {
         }
         ret += Integer.parseInt(temp.toString()) * 10;
         return ret;
+    }
+
+    public static boolean isCurrentPlayer(int player){
+        boolean isPlayer;
+        if(currentPlayer == 1 && player == myColor)
+            isPlayer = true;
+        else if(currentPlayer == -1 && player == myColor)
+            isPlayer = true;
+        else isPlayer = false;
+
+
+        return isPlayer;
     }
 
 }
