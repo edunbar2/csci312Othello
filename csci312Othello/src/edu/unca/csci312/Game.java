@@ -86,18 +86,7 @@ public class Game {
 
         }
         gameboard.printBoard();
-        System.out.println("Game over!" );
-        int remainingBlack = gameboard.getBlackPieces();
-        int remainingWhite = gameboard.getWhitePieces();
-        System.out.println("Black pieces remaining: " + remainingBlack);
-        if(playerTimer >= 90.0)
-            System.out.println(opponentColor + " Wins!");
-        else if(opponentTimer >= 90.0)
-            System.out.println(myColor + " Wins");
-        else if(remainingBlack > remainingWhite)
-            System.out.println("Black wins!");
-        else
-            System.out.println("White wins!");
+        getWinner();
     }
 
     public static boolean gameOver() {
@@ -147,7 +136,7 @@ public class Game {
 
         if(input.equals("n")){
             if(gameOver()){
-                exit(0);
+               getWinner();
             }
         }
         int ret = 0;
@@ -244,6 +233,22 @@ public class Game {
 
 
         return isPlayer;
+    }
+
+    public static void getWinner(){
+        System.out.println("Game over!" );
+        int remainingBlack = gameboard.getBlackPieces();
+        int remainingWhite = gameboard.getWhitePieces();
+        System.out.println("Black pieces remaining: " + remainingBlack);
+        if(playerTimer >= 90.0)
+            System.out.println(opponentColor + " Wins!");
+        else if(opponentTimer >= 90.0)
+            System.out.println(myColor + " Wins");
+        else if(remainingBlack > remainingWhite)
+            System.out.println("Black wins!");
+        else
+            System.out.println("White wins!");
+        exit(0);
     }
 
 }
