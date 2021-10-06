@@ -341,7 +341,7 @@ public class Board {
 
             return true; // notify game class of completion
         } else {
-            System.out.println("(C) invalid move, try again");
+            System.out.println("C invalid move, try again");
             return false; // notify game class of invalid move
         }
 
@@ -552,18 +552,26 @@ public class Board {
 
     /**
      * This function takes in the board to be evaluated and adds up the score of the player.
-     * This score is generated using the equation (Value of Board * Number of Moves) / Number of Opponent Moves
-     * @param currentBoard to be evaluated
+     * This score is generated using the equation
+     * (((boardValue-AITiles)*0.6) * (numMoves * 0.9)) - ((playerValue + playerTiles)*0.5)/opponentMoves
+     * This equation uses a weight map and several biases to shift importance from one statistic to another.
      * @return value of board
      */
-    public int evaluate(Board currentBoard) {
+    public int evaluate() {
         int boardValue = 0;
+        int AITiles = 0;
+        int playerValue = 0;
+        int playerTiles = 0;
         for(int i = 11; i < 89; i++){ // get value of the current board
             if(i%10 != 0 && (i+1)%10 != 0){
-                if(currentBoard.getBoard()[i] == opponent)
+                if(this.getBoard()[i] == opponent) {
                     boardValue += map[i];
-                else if(currentBoard.board[i] == player)
-                    boardValue -= map[i];
+                    AITiles++;
+                }
+                else if(this.board[i] == player) {
+                    playerValue += map[i];
+                    playerTiles++;
+                }
             }
         }
          // get other data
@@ -578,15 +586,15 @@ public class Board {
         }
 
 
-         // score equals boardValue * number of moves / number of opponent moves.
-        int score = (boardValue * numMoves)/opponentMoves;
-        if(Game.gameOver(currentBoard)){
-            int blackPieces = currentBoard.getBlackPieces();
-            int whitePieces = currentBoard.getWhitePieces();
+         // evaluate score
+        double score = (((boardValue-AITiles)*0.6) * (numMoves * 0.9)) - ((playerValue + playerTiles)*0.5)/opponentMoves;
+        if(Game.gameOver(this)){
+            int blackPieces = this.getBlackPieces();
+            int whitePieces = this.getWhitePieces();
             if(Game.getWinner(blackPieces, whitePieces) == opponentColor) score += 10000000;
             else score -= 10000000;
         }
-        return score;
+        return (int) score;
     }
 
     public void printBoard() {

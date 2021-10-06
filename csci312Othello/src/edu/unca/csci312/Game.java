@@ -280,7 +280,7 @@ public class Game {
     private static int minimax(Move move, Board copy, int d, boolean minimax) {
       // System.out.println("C Checking at depth: " + d + " out of " + depth);
         if(d == 0 || gameOver(copy))
-            return copy.evaluate(copy);
+            return copy.evaluate();
 
         Board tempBoard = new Board(copy);
         if(minimax){
@@ -289,7 +289,7 @@ public class Game {
           Stack<Move> moves = tempBoard.generateMoves(myColor);
          // System.out.println("C Moves to check at depth" + d +": " + moves.size());
           while(!moves.isEmpty()){
-             int eval = minimax(moves.pop(), tempBoard, d-1, false);
+             int eval = tempBoard.evaluate() + minimax(moves.pop(), tempBoard, d-1, false);
              maxEval = Math.max(maxEval, eval);
           }
           return maxEval;
@@ -299,7 +299,7 @@ public class Game {
             Stack<Move> moves = tempBoard.generateMoves(opponentColor);
            //System.out.println("Moves to check at depth" + d +": " + moves.size());
             while(!moves.isEmpty()){
-                int eval = minimax(moves.pop(), tempBoard, d-1, true);
+                int eval = tempBoard.evaluate() + minimax(moves.pop(), tempBoard, d-1, true);
                 minEval = Math.min(minEval, eval);
             }
             return minEval;
