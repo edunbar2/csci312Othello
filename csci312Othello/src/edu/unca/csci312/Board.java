@@ -10,11 +10,11 @@ public class Board {
             {
                     -20,-20,-20,-20,-20,-20,-20,-20,-20,-20,
                     -20, 10,  2,  8,  8 , 8 , 8 , 2 ,10,-20,
-                    -20,  2,  1,  3,  3,  3,  3,  1,  2,-20,
-                    -20,  8,  3,  6,  6,  6,  6,  3,  8,-20,
-                    -20,  8,  3,  6,  7,  7,  6,  3,  8,-20,
-                    -20,  8,  3,  6,  7,  7,  6,  3,  8,-20,
-                    -20,  8,  3,  6,  6,  6,  6,  3,  8,-20,
+                    -20,  2,  1,  2,  2,  2,  2,  1,  2,-20,
+                    -20,  8,  2,  5,  5,  5,  5,  2,  8,-20,
+                    -20,  8,  2,  5,  6,  6,  5,  2,  8,-20,
+                    -20,  8,  2,  5,  6,  6,  5,  2,  8,-20,
+                    -20,  8,  2,  5,  5,  5,  5,  2,  8,-20,
                     -20,  2,  1,  3,  3,  3,  3,  1,  2,-20,
                     -20, 10,  2,  8,  8,  8,  8,  2, 10,-20,
                     -20,-20,-20,-20,-20,-20,-20,-20,-20,-20
@@ -320,7 +320,7 @@ public class Board {
         // check stack for legal moves. may switch to priority queue for ease of access
         int index = -1;
         if(moves.elementAt(0).isPass()){
-            System.out.println("(C) Passing");
+            System.out.println("C Passing");
             return true;
         }
         for (int i = 0; i < moves.size(); i++) {
@@ -553,7 +553,7 @@ public class Board {
     /**
      * This function takes in the board to be evaluated and adds up the score of the player.
      * This score is generated using the equation
-     * (((boardValue-AITiles)*0.6) * (numMoves * 0.9)) - ((playerValue + playerTiles)*0.5)/opponentMoves
+     * %weightmap + %moves + %corners
      * This equation uses a weight map and several biases to shift importance from one statistic to another.
      * @return value of board
      */
@@ -574,7 +574,9 @@ public class Board {
                 }
             }
         }
-         // get other data
+        //calculate value of weight map
+        int weights = 100 * (((boardValue/AITiles)-(playerValue/playerTiles)) / ((boardValue/AITiles)+(playerValue/playerTiles)));
+         // get number of moves
         int numMoves;
         int opponentMoves;
         if(playerColor == White){
@@ -585,9 +587,28 @@ public class Board {
             opponentMoves = generateMoves(Black).size();
         }
 
+        //calculate value of moves
+        int moves = 100 * ((numMoves - opponentMoves) / (numMoves + opponentMoves));
+
+
+        //get number of corners captured
+        int AICorners = 0;
+        int playerCorners = 0;
+        if(this.board[11] == -1) AICorners++;
+        else if(this.board[11] == 1) playerCorners++;
+        if(this.board[18] == -1) AICorners++;
+        else if(this.board[18] == 1) playerCorners++;
+        if(this.board[81] == -1) AICorners++;
+        else if(this.board[81] == 1) playerCorners++;
+        if(this.board[88] == -1) AICorners++;
+        else if(this.board[88] == 1) playerCorners++;
+        //calculate value of corners
+        int corners = 100 * ((AICorners-playerCorners)/(AICorners=playerCorners));
+
+
 
          // evaluate score
-        double score = (((boardValue-AITiles)*0.6) * (numMoves * 0.9)) - ((playerValue + playerTiles)*0.5)/opponentMoves;
+        double score = (weights * 0.2) + (moves * 0.6) + (corners * 0.3);
         if(Game.gameOver(this)){
             int blackPieces = this.getBlackPieces();
             int whitePieces = this.getWhitePieces();

@@ -13,7 +13,7 @@ public class Game {
     public static final int opponent = -1;
     public static final int White = 128;
     public static final int Black = 256;
-    public static final int depth = 5;
+    public static final int depth = 10;
 
     // variables
     public static Board gameboard;
@@ -266,7 +266,7 @@ public class Game {
         int bestMove = 0;
         int highScore = Integer.MIN_VALUE;
         for(int i = 0; i < moves.size(); i++){
-            int eval = minimax(moves.elementAt(i), gameboard, depth, true);
+            int eval = minimax(moves.elementAt(i), gameboard, depth, true, Integer.MIN_VALUE, Integer.MAX_VALUE);
             if(eval > highScore){
                 highScore = eval;
                 bestMove++;
@@ -277,7 +277,20 @@ public class Game {
         return moveMade;
     }
 
-    private static int minimax(Move move, Board copy, int d, boolean minimax) {
+    /**
+     * This algorithm recursively tests all possible lines
+     * for the given move and returns the value of that move/line.
+     * This algorithm also implements alpha beta pruning in order to save time
+     * on lines that should never be picked.
+     * @param move move to be applied/tested
+     * @param copy of the board to be used
+     * @param d depth at which to search
+     * @param minimax determine whether it is the maximizing or minimizing players turn
+     * @param alpha is the best value the maximizer can currently promise
+     * @param beta is the best value the minimizer can currently promise
+     * @return score for that move/line.
+     */
+    private static int minimax(Move move, Board copy, int d, boolean minimax, int alpha, int beta) {
       // System.out.println("C Checking at depth: " + d + " out of " + depth);
         if(d == 0 || gameOver(copy))
             return copy.evaluate();
@@ -289,8 +302,10 @@ public class Game {
           Stack<Move> moves = tempBoard.generateMoves(myColor);
          // System.out.println("C Moves to check at depth" + d +": " + moves.size());
           while(!moves.isEmpty()){
-             int eval = tempBoard.evaluate() + minimax(moves.pop(), tempBoard, d-1, false);
+             int eval = tempBoard.evaluate() + minimax(moves.pop(), tempBoard, d-1, false, alpha, beta);
              maxEval = Math.max(maxEval, eval);
+             alpha = Math.max(alpha, maxEval);
+             if(beta <= alpha) break;
           }
           return maxEval;
         }else{
@@ -299,8 +314,10 @@ public class Game {
             Stack<Move> moves = tempBoard.generateMoves(opponentColor);
            //System.out.println("Moves to check at depth" + d +": " + moves.size());
             while(!moves.isEmpty()){
-                int eval = tempBoard.evaluate() + minimax(moves.pop(), tempBoard, d-1, true);
+                int eval = tempBoard.evaluate() + minimax(moves.pop(), tempBoard, d-1, true, alpha, beta);
                 minEval = Math.min(minEval, eval);
+                beta = Math.min(minEval, beta);
+                if(beta <= alpha) break;
             }
             return minEval;
         }
