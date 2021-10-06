@@ -1,5 +1,6 @@
 package edu.unca.csci312;
 
+import java.util.Arrays;
 import java.util.Stack;
 
 public class Board {
@@ -8,14 +9,14 @@ public class Board {
     private static final int[] map =
             {
                     -20,-20,-20,-20,-20,-20,-20,-20,-20,-20,
-                    -20, 12,  2,  8,  8 , 8 , 8 , 2 ,12,-20,
-                    -20,  2,  1,  4,  4,  4,  4,  1,  2,-20,
-                    -20,  8,  4,  6,  6,  6,  6,  4,  8,-20,
-                    -20,  8,  4,  6,  7,  7,  6,  4,  8,-20,
-                    -20,  8,  4,  6,  7,  7,  6,  4,  8,-20,
-                    -20,  8,  4,  6,  6,  6,  6,  4,  8,-20,
-                    -20,  2,  1,  4,  4 , 4,  4,  1,  2,-20,
-                    -20, 12,  2,  8,  8,  8,  8,  2, 12,-20,
+                    -20, 10,  2,  8,  8 , 8 , 8 , 2 ,10,-20,
+                    -20,  2,  1,  3,  3,  3,  3,  1,  2,-20,
+                    -20,  8,  3,  6,  6,  6,  6,  3,  8,-20,
+                    -20,  8,  3,  6,  7,  7,  6,  3,  8,-20,
+                    -20,  8,  3,  6,  7,  7,  6,  3,  8,-20,
+                    -20,  8,  3,  6,  6,  6,  6,  3,  8,-20,
+                    -20,  2,  1,  3,  3,  3,  3,  1,  2,-20,
+                    -20, 10,  2,  8,  8,  8,  8,  2, 10,-20,
                     -20,-20,-20,-20,-20,-20,-20,-20,-20,-20
             };
 
@@ -51,9 +52,8 @@ public class Board {
     public Board(Board copy) {
         this.playerColor = copy.getPlayerColor();
         this.board = new int[100];
-        for(int i = 0; i < copy.board.length; i++){
-            this.board[i] = copy.board[i];
-        }
+        System.arraycopy(copy.board,0, this.board, 0, 100);
+
     }
 
     /**
@@ -149,7 +149,6 @@ public class Board {
         int ret = -1;
         if (direction == "NW") {
             while (board[p] != -2) {
-                if (getNW(p) >= 0)
                     p = getNW(p);
                 // illegal moves
                 if (board[p] == player) {
@@ -185,7 +184,6 @@ public class Board {
             }
         } else if (direction == "NE") {
             while (board[p] != -2) {
-                if(getNE(p) >= 9)
                     p = getNE(p);
                 // illegal moves
                 if (board[p] == player) {
@@ -245,7 +243,6 @@ public class Board {
             }
         } else if (direction == "S") {
             while (board[p] != -2) {
-                if(p <= 90)
                 p = getS(p);
                 // illegal moves
                 if (board[p] == player) {
@@ -557,15 +554,16 @@ public class Board {
      * This function takes in the board to be evaluated and adds up the score of the player.
      * This score is generated using the equation (Value of Board * Number of Moves) / Number of Opponent Moves
      * @param currentBoard to be evaluated
-     * @param p playercolor to be added
      * @return value of board
      */
-    public int evaluate(Board currentBoard, int p) {
+    public int evaluate(Board currentBoard) {
         int boardValue = 0;
         for(int i = 11; i < 89; i++){ // get value of the current board
             if(i%10 != 0 && (i+1)%10 != 0){
-                if(currentBoard.getBoard()[i] == p)
+                if(currentBoard.getBoard()[i] == opponent)
                     boardValue += map[i];
+                else if(currentBoard.board[i] == player)
+                    boardValue -= map[i];
             }
         }
          // get other data

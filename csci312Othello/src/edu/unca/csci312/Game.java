@@ -13,6 +13,7 @@ public class Game {
     public static final int opponent = -1;
     public static final int White = 128;
     public static final int Black = 256;
+    public static final int depth = 5;
 
     // variables
     public static Board gameboard;
@@ -257,7 +258,7 @@ public class Game {
     }
 
     public static boolean getAIMove(){
-        int depth = 5;
+
         boolean moveMade = false;
          // generate current moves
         Stack<Move> moves = gameboard.generateMoves(opponentColor);
@@ -276,22 +277,19 @@ public class Game {
         return moveMade;
     }
 
-    private static int minimax(Move move, Board copy, int depth, boolean minimax) {
-       System.out.println("C Checking at depth: " + depth);
-       copy.printBoard();
-        if(depth == 0 || gameOver(copy)){
-            if(minimax){
-                return copy.evaluate(copy, opponent);
-            }else return copy.evaluate(copy, player);
-        }
-        Board tempBoard = new Board(copy);
+    private static int minimax(Move move, Board copy, int d, boolean minimax) {
+      // System.out.println("C Checking at depth: " + d + " out of " + depth);
+        if(d == 0 || gameOver(copy))
+            return copy.evaluate(copy);
 
+        Board tempBoard = new Board(copy);
         if(minimax){
         int maxEval = Integer.MIN_VALUE;
           tempBoard.applyMove(move.getPosition(),opponentColor);
           Stack<Move> moves = tempBoard.generateMoves(myColor);
+         // System.out.println("C Moves to check at depth" + d +": " + moves.size());
           while(!moves.isEmpty()){
-             int eval = minimax(moves.pop(), tempBoard, depth-1, false);
+             int eval = minimax(moves.pop(), tempBoard, d-1, false);
              maxEval = Math.max(maxEval, eval);
           }
           return maxEval;
@@ -299,8 +297,9 @@ public class Game {
             int minEval = Integer.MAX_VALUE;
             tempBoard.applyMove(move.getPosition(), myColor);
             Stack<Move> moves = tempBoard.generateMoves(opponentColor);
+           //System.out.println("Moves to check at depth" + d +": " + moves.size());
             while(!moves.isEmpty()){
-                int eval = minimax(moves.pop(), tempBoard, depth-1, false);
+                int eval = minimax(moves.pop(), tempBoard, d-1, true);
                 minEval = Math.min(minEval, eval);
             }
             return minEval;
