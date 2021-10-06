@@ -65,7 +65,7 @@ public class Game {
                     move = 0;
                 }
                 //int move = moves.elementAt(ran.nextInt(moves.size())).getPosition();
-                moveMade = gameboard.applyMove(move, myColor, moves);
+                moveMade = gameboard.applyMove(move, myColor);
                 moveTime = (System.currentTimeMillis()/1000.0)-moveTime;
                 playerTimer += moveTime; //add move time to timer
                 System.out.printf("C %d\n", gameboard.getBlackPieces());
@@ -231,10 +231,6 @@ public class Game {
         return isPlayer;
     }
 
-    public static int getCurrentPlayer(){
-        if(currentPlayer == player) return myColor;
-        else return opponentColor;
-    }
 
 
     public static void endGame(){
@@ -261,63 +257,51 @@ public class Game {
     }
 
     public static boolean getAIMove(){
-        Random ran = new Random();
-        boolean moveMade;
-        Board tempBoard = new Board(gameboard);
-        Stack<Move> moves = tempBoard.generateMoves(opponentColor);
-        int[] bestmove = new int[moves.size()];
+        int depth = 5;
+        boolean moveMade = false;
+         // generate current moves
+        Stack<Move> moves = gameboard.generateMoves(opponentColor);
+         // determine best move
+        int bestMove = 0;
+        int highScore = Integer.MIN_VALUE;
         for(int i = 0; i < moves.size(); i++){
-            bestmove[i] = minimax(i, tempBoard, 10, true);
-        }
-        int index = 0;
-        int currentBest = bestmove[0];
-        for(int i = 0; i < bestmove.length; i++){
-            if(Math.max(currentBest, bestmove[i]) > currentBest){
-                index = i;
+            int eval = minimax(moves.elementAt(i), gameboard, depth, true);
+            if(eval > highScore){
+                highScore = eval;
+                bestMove++;
             }
         }
-
-         // apply final move and return
-        moveMade = gameboard.applyMove(moves.elementAt(index).getPosition(), opponentColor, moves);
+         //apply best move and return true
+        moveMade = gameboard.applyMove(moves.elementAt(bestMove).getPosition(), opponentColor);
         return moveMade;
     }
 
-    private static int minimax(int index, Board copy, int depth, boolean maximizingPlayer) {
-
-        if (depth == 0 || gameOver(copy)) {
-            if(maximizingPlayer){
+    private static int minimax(Move move, Board copy, int depth, boolean minimax) {
+       System.out.println("C Checking at depth: " + depth);
+       copy.printBoard();
+        if(depth == 0 || gameOver(copy)){
+            if(minimax){
                 return copy.evaluate(copy, opponent);
             }else return copy.evaluate(copy, player);
-
         }
-        if (maximizingPlayer) {
-            int maxEval = Integer.MIN_VALUE;
+        Board tempBoard = new Board(copy);
 
-            Stack<Move> moves = copy.generateMoves(opponentColor);
-            Board tempBoard = new Board(copy);
-            tempBoard.applyMove(moves.elementAt(index).getPosition(), opponentColor, moves);
-            // generate moves of new board
-            Stack<Move> newMoves = tempBoard.generateMoves(opponentColor);
-            for (int i = 0; i < moves.size(); i++) {
-                int eval = minimax(i, tempBoard, depth - 1, false);
-                maxEval = Integer.max(maxEval, eval);
-
-
-            }
-            return maxEval;
-        } else {
+        if(minimax){
+        int maxEval = Integer.MIN_VALUE;
+          tempBoard.applyMove(move.getPosition(),opponentColor);
+          Stack<Move> moves = tempBoard.generateMoves(myColor);
+          while(!moves.isEmpty()){
+             int eval = minimax(moves.pop(), tempBoard, depth-1, false);
+             maxEval = Math.max(maxEval, eval);
+          }
+          return maxEval;
+        }else{
             int minEval = Integer.MAX_VALUE;
-
-            Stack<Move> moves = copy.generateMoves(myColor);
-            Board tempBoard = new Board(copy);
-            tempBoard.applyMove(moves.elementAt(index).getPosition(), myColor, moves);
-            // generate moves of new board
-            Stack<Move> newMoves = tempBoard.generateMoves(myColor);
-            for (int i = 0; i < moves.size(); i++) {
-                int eval = minimax(i, tempBoard, depth - 1, true);
-                minEval = Integer.min(minEval, eval);
-
-
+            tempBoard.applyMove(move.getPosition(), myColor);
+            Stack<Move> moves = tempBoard.generateMoves(opponentColor);
+            while(!moves.isEmpty()){
+                int eval = minimax(moves.pop(), tempBoard, depth-1, false);
+                minEval = Math.min(minEval, eval);
             }
             return minEval;
         }

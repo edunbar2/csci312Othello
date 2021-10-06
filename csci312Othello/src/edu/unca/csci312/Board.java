@@ -196,7 +196,6 @@ public class Board {
                     break;
                 } else if (board[p] == opponent) { // search for legal move
                     ret = p;
-                    p = getNE(p);
                 } else {
                     ret = -1;
                     break;
@@ -246,6 +245,7 @@ public class Board {
             }
         } else if (direction == "S") {
             while (board[p] != -2) {
+                if(p <= 90)
                 p = getS(p);
                 // illegal moves
                 if (board[p] == player) {
@@ -317,8 +317,9 @@ public class Board {
      * @param pos    position on the board to place tile
      * @param player playing move
      */
-    public boolean applyMove(int pos, int player, Stack<Move> moves) {
-
+    public boolean applyMove(int pos, int player) {
+        //Generate moves for player
+        Stack<Move> moves = this.generateMoves(player);
         // check stack for legal moves. may switch to priority queue for ease of access
         int index = -1;
         if(moves.elementAt(0).isPass()){
