@@ -291,28 +291,28 @@ public class Game {
         row += Integer.toString((pipe));
         switch(c){
             case 1:
-                column += "A ";
+                column += "a ";
                 break;
             case 2:
-                column += "B ";
+                column += "b ";
                 break;
             case 3:
-                column += "C ";
+                column += "c ";
                 break;
             case 4:
-                column += "D ";
+                column += "d ";
                 break;
             case 5:
-                column += "E ";
+                column += "e ";
                 break;
             case 6:
-                column += "F ";
+                column += "f ";
                 break;
             case 7:
-                column += "G ";
+                column += "g ";
                 break;
             case 8:
-                column += "H ";
+                column += "h ";
                 break;
             default: break;
         }
