@@ -184,7 +184,7 @@ public class Game {
             if(input.equals("W")){
                 return -2; // tell system to pass
             }
-            String interp = input.substring(2, input.length());
+            String interp = input.substring(2, input.length()).toUpperCase();
             // interpret movements
             if (interp.charAt(0) == 'A')
                 ret = 1;
