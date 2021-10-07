@@ -43,9 +43,9 @@ public class Board {
         this.board = new int[100];
         initialize(this.playerColor);
         if(this.playerColor == Black){
-            System.out.println("R B");
-        }else if(this.playerColor == White){
             System.out.println("R W");
+        }else if(this.playerColor == White){
+            System.out.println("R B");
         }
     }
 
@@ -557,61 +557,64 @@ public class Board {
      * This equation uses a weight map and several biases to shift importance from one statistic to another.
      * @return value of board
      */
-    public int evaluate() {
+    public int evaluate(Board currentBoard) {
         int boardValue = 0;
-        int AITiles = 0;
         int playerValue = 0;
-        int playerTiles = 0;
         for(int i = 11; i < 89; i++){ // get value of the current board
             if(i%10 != 0 && (i+1)%10 != 0){
-                if(this.getBoard()[i] == opponent) {
-                    boardValue += map[i];
-                    AITiles++;
+                if(currentBoard.getBoard()[i] == opponent) {
+                    boardValue += map[i] * map[i];
                 }
-                else if(this.board[i] == player) {
-                    playerValue += map[i];
-                    playerTiles++;
+                else if(currentBoard.board[i] == player) {
+                    playerValue += map[i] * map[i];
                 }
             }
         }
         //calculate value of weight map
-        int weights = 100 * (((boardValue/AITiles)-(playerValue/playerTiles)) / ((boardValue/AITiles)+(playerValue/playerTiles)));
+        double weights = 1.0;
+        if(boardValue != 0 && playerValue != 0)
+        weights = 100 * (((boardValue)-(playerValue)) / ((boardValue)+(playerValue)));
+
          // get number of moves
-        int numMoves;
-        int opponentMoves;
+        double numMoves;
+        double opponentMoves;
         if(playerColor == White){
-            numMoves = generateMoves(Black).size();
-            opponentMoves = generateMoves(White).size();
+            numMoves = currentBoard.generateMoves(Black).size() + 0.1;
+            opponentMoves = currentBoard.generateMoves(White).size() + 0.1;
         }else{
-            numMoves = generateMoves(White).size();
-            opponentMoves = generateMoves(Black).size();
+            numMoves = currentBoard.generateMoves(White).size() + 0.1;
+            opponentMoves = currentBoard.generateMoves(Black).size() + 0.1;
         }
 
         //calculate value of moves
-        int moves = 100 * ((numMoves - opponentMoves) / (numMoves + opponentMoves));
-
+        double moves = 1.0;
+        if(numMoves > 0 && opponentMoves > 0)
+         moves = numMoves/opponentMoves;
+        else moves = numMoves;
 
         //get number of corners captured
-        int AICorners = 0;
+        double AICorners = 0.1;
         int playerCorners = 0;
-        if(this.board[11] == -1) AICorners++;
-        else if(this.board[11] == 1) playerCorners++;
-        if(this.board[18] == -1) AICorners++;
-        else if(this.board[18] == 1) playerCorners++;
-        if(this.board[81] == -1) AICorners++;
-        else if(this.board[81] == 1) playerCorners++;
-        if(this.board[88] == -1) AICorners++;
-        else if(this.board[88] == 1) playerCorners++;
+        if(currentBoard.board[11] == -1) AICorners++;
+        else if(currentBoard.board[11] == 1) playerCorners++;
+        if(currentBoard.board[18] == -1) AICorners++;
+        else if(currentBoard.board[18] == 1) playerCorners++;
+        if(currentBoard.board[81] == -1) AICorners++;
+        else if(currentBoard.board[81] == 1) playerCorners++;
+        if(currentBoard.board[88] == -1) AICorners++;
+        else if(currentBoard.board[88] == 1) playerCorners++;
         //calculate value of corners
-        int corners = 100 * ((AICorners-playerCorners)/(AICorners=playerCorners));
+        double corners = 1.1;
+        if(AICorners != 0 && playerCorners != 0)
+            corners = 100 * ((AICorners-playerCorners)/(AICorners+playerCorners));
 
 
 
-         // evaluate score
-        double score = (weights * 0.2) + (moves * 0.6) + (corners * 0.3);
+         // evaluate score important mid-game
+        double score =   (weights*2.5) + 4.6*moves + 4.0*corners;
         if(Game.gameOver(this)){
-            int blackPieces = this.getBlackPieces();
-            int whitePieces = this.getWhitePieces();
+            int blackPieces = currentBoard.getBlackPieces();
+            int whitePieces = currentBoard.getWhitePieces();
             if(Game.getWinner(blackPieces, whitePieces) == opponentColor) score += 10000000;
             else score -= 10000000;
         }
@@ -619,10 +622,10 @@ public class Board {
     }
 
     public void printBoard() {
-        System.out.print("    A B C D E F G H\n  X X X X X X X X X X");
+        System.out.print("C     A B C D E F G H\nC  X X X X X X X X X X");
         for (int i = 10; i < board.length - 10; i++) {
             if (i % 10 == 0)
-                System.out.print("\n"); // border has been reached
+                System.out.print("\nC "); // border has been reached
             if (i % 10 == 0 && i > 0 && i < 90)
                 System.out.printf("%d ", i / 10);
 
@@ -641,7 +644,7 @@ public class Board {
             } else if (board[i] == -2)
                 System.out.print("X ");
         }
-        System.out.println("\n  X X X X X X X X X X");
+        System.out.println("\nC  X X X X X X X X X X");
     }
 
 }

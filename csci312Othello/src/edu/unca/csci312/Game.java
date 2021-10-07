@@ -13,7 +13,7 @@ public class Game {
     public static final int opponent = -1;
     public static final int White = 128;
     public static final int Black = 256;
-    public static final int depth = 10;
+    public static final int depth = 7;
 
     // variables
     public static Board gameboard;
@@ -36,12 +36,12 @@ public class Game {
         Random ran = new Random();
         boolean moveMade = false;
         // get user input
-        while (myColor != Black && myColor != White) {
-            myColor = getInput("What color do you want to play?");
+        while (opponentColor != Black && myColor != White) {
+            opponentColor = getInput("C What color do you want to play?");
         }
         //set opponent color
-        if(myColor == Black) opponentColor = White;
-        else opponentColor = Black;
+        if(opponentColor == Black) myColor = White;
+        else myColor = Black;
 
         // create game board
         gameboard = new Board(myColor);
@@ -59,13 +59,13 @@ public class Game {
             if (currentPlayer == player) {
                 moveTime = System.currentTimeMillis()/1000.0;
                 Stack<Move> moves = gameboard.generateMoves(myColor);
-                int move = getInput("What move do you want to make?");
+                int move = getInput("C What move do you want to make?");
+                //int move = moves.elementAt(ran.nextInt(moves.size())).getPosition();
                 if(move == -2){
                     Move node = new Move("P");
                     moves.push(node);
                     move = 0;
                 }
-                //int move = moves.elementAt(ran.nextInt(moves.size())).getPosition();
                 moveMade = gameboard.applyMove(move, myColor);
                 moveTime = (System.currentTimeMillis()/1000.0)-moveTime;
                 playerTimer += moveTime; //add move time to timer
@@ -177,14 +177,14 @@ public class Game {
             else if (interp.charAt(0) == 'H')
                 ret = 8;
             else {
-                System.out.println("Invalid input, please try again.\n");
+                System.out.println("C Invalid input, please try again.\n");
                 return -1;
             }
         }else if(input.charAt(0) == 'W' && isCurrentPlayer(White)){
             if(input.equals("W")){
                 return -2; // tell system to pass
             }
-            String interp = input.substring(1, input.length());
+            String interp = input.substring(2, input.length());
             // interpret movements
             if (interp.charAt(0) == 'A')
                 ret = 1;
@@ -203,7 +203,7 @@ public class Game {
             else if (interp.charAt(0) == 'H')
                 ret = 8;
             else {
-                System.out.println("Invalid input, please try again.\n");
+                System.out.println("C Invalid input, please try again.\n");
                 return -1;
             }
         }else{
@@ -235,13 +235,13 @@ public class Game {
 
 
     public static void endGame(){
-        System.out.println("Game over!" );
+        System.out.println("C Game over!" );
         int remainingBlack = gameboard.getBlackPieces();
         int remainingWhite = gameboard.getWhitePieces();
-        System.out.println("Black pieces remaining: " + remainingBlack);
+        System.out.println("C Black pieces remaining: " + remainingBlack);
         int winner = getWinner(remainingBlack, remainingWhite);
-        if(winner == Black) System.out.println("Black Wins!");
-        else System.out.println("White wins!");
+        if(winner == Black) System.out.println("C Black Wins!");
+        else System.out.println("C White wins!");
         exit(0);
     }
 
@@ -272,9 +272,57 @@ public class Game {
                 bestMove++;
             }
         }
-         //apply best move and return true
+        System.out.printf("C Best move is [%d] with score (%d)\n", moves.elementAt(bestMove).getPosition(), highScore);
+
+         //apply best move
         moveMade = gameboard.applyMove(moves.elementAt(bestMove).getPosition(), opponentColor);
+        //pipe move to Referee
+        int pipe = moves.elementAt(bestMove).getPosition();
+        int c = Integer.parseInt(Integer.toString(pipe).substring(1));
+        String row = "";
+        String column = "";
+        pipe -= c;
+        System.out.println(pipe);
+        pipe = pipe/10;
+        row += Integer.toString((pipe));
+        switch(c){
+            case 1:
+                column += "A ";
+                break;
+            case 2:
+                column += "B ";
+                break;
+            case 3:
+                column += "C ";
+                break;
+            case 4:
+                column += "D ";
+                break;
+            case 5:
+                column += "E ";
+                break;
+            case 6:
+                column += "F ";
+                break;
+            case 7:
+                column += "G ";
+                break;
+            case 8:
+                column += "H ";
+                break;
+            default: break;
+        }
+
+        String out = "";
+        if(opponentColor == Black) out += "B ";
+        else out += "W ";
+        out += column + row;
+        System.out.println(out);
+
+        //return moveMade
         return moveMade;
+
+
     }
 
     /**
@@ -293,19 +341,22 @@ public class Game {
     private static int minimax(Move move, Board copy, int d, boolean minimax, int alpha, int beta) {
       // System.out.println("C Checking at depth: " + d + " out of " + depth);
         if(d == 0 || gameOver(copy))
-            return copy.evaluate();
+            return copy.evaluate(copy);
 
         Board tempBoard = new Board(copy);
         if(minimax){
         int maxEval = Integer.MIN_VALUE;
           tempBoard.applyMove(move.getPosition(),opponentColor);
           Stack<Move> moves = tempBoard.generateMoves(myColor);
+
          // System.out.println("C Moves to check at depth" + d +": " + moves.size());
           while(!moves.isEmpty()){
-             int eval = tempBoard.evaluate() + minimax(moves.pop(), tempBoard, d-1, false, alpha, beta);
-             maxEval = Math.max(maxEval, eval);
-             alpha = Math.max(alpha, maxEval);
-             if(beta <= alpha) break;
+              int pos = moves.peek().getPosition();
+              int eval = tempBoard.evaluate(tempBoard) + minimax(moves.pop(), tempBoard, d-1, false, alpha, beta);
+             // System.out.printf("C Testing position (%d) with score %d \n", pos, eval);
+              maxEval = Math.max(maxEval, eval);
+              alpha = Math.max(alpha, maxEval);
+              if(beta <= alpha) break;
           }
           return maxEval;
         }else{
@@ -314,7 +365,9 @@ public class Game {
             Stack<Move> moves = tempBoard.generateMoves(opponentColor);
            //System.out.println("Moves to check at depth" + d +": " + moves.size());
             while(!moves.isEmpty()){
-                int eval = tempBoard.evaluate() + minimax(moves.pop(), tempBoard, d-1, true, alpha, beta);
+                int pos = moves.peek().getPosition();
+                int eval = tempBoard.evaluate(tempBoard) + minimax(moves.pop(), tempBoard, d-1, true, alpha, beta);
+               // System.out.printf("C Testing position (%d) with score %d \n", pos, eval);
                 minEval = Math.min(minEval, eval);
                 beta = Math.min(minEval, beta);
                 if(beta <= alpha) break;
