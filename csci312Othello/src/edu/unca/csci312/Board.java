@@ -1,6 +1,6 @@
 package edu.unca.csci312;
 
-import java.util.Arrays;
+
 import java.util.Stack;
 
 public class Board {
@@ -611,7 +611,7 @@ public class Board {
 
 
          // evaluate score important mid-game
-        double score =   (weights*2.5) + 4.6*moves + 4.0*corners;
+        double score =   (weights*2.5) + (4.6*moves) + (4.0*corners);
         if(Game.gameOver(this)){
             int blackPieces = currentBoard.getBlackPieces();
             int whitePieces = currentBoard.getWhitePieces();
