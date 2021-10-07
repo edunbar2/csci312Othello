@@ -287,7 +287,6 @@ public class Game {
         String row = "";
         String column = "";
         pipe -= c;
-        System.out.println(pipe);
         pipe = pipe/10;
         row += Integer.toString((pipe));
         switch(c){
