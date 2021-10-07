@@ -275,6 +275,11 @@ public class Game {
         System.out.printf("C Best move is [%d] with score (%d)\n", moves.elementAt(bestMove).getPosition(), highScore);
 
          //apply best move
+        //check for Pass and inform the Referee
+        if(moves.elementAt(bestMove).isPass()){
+            if(opponentColor == Black) System.out.println("B");
+            else System.out.println("W");
+        }
         moveMade = gameboard.applyMove(moves.elementAt(bestMove).getPosition(), opponentColor);
         //pipe move to Referee
         int pipe = moves.elementAt(bestMove).getPosition();
