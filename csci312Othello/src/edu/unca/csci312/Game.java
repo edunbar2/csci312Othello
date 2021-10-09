@@ -36,7 +36,7 @@ public class Game {
         Random ran = new Random();
         boolean moveMade = false;
         // get user input
-        while (opponentColor != Black && myColor != White) {
+        while (opponentColor != Black && opponentColor != White) {
             opponentColor = getInput("C What color do you want to play?");
         }
         //set opponent color
@@ -59,8 +59,8 @@ public class Game {
             if (currentPlayer == player) {
                 moveTime = System.currentTimeMillis()/1000.0;
                 Stack<Move> moves = gameboard.generateMoves(myColor);
-                int move = getInput("C What move do you want to make?");
-                //int move = moves.elementAt(ran.nextInt(moves.size())).getPosition();
+                //int move = getInput("C What move do you want to make?");
+                int move = moves.elementAt(ran.nextInt(moves.size())).getPosition();
                 if(move == -2){
                     Move node = new Move("P");
                     moves.push(node);
@@ -242,6 +242,8 @@ public class Game {
         int winner = getWinner(remainingBlack, remainingWhite);
         if(winner == Black) System.out.println("C Black Wins!");
         else System.out.println("C White wins!");
+        //tell other program to check for game over
+        System.out.println(remainingBlack);
         exit(0);
     }
 
@@ -262,6 +264,14 @@ public class Game {
         boolean moveMade = false;
          // generate current moves
         Stack<Move> moves = gameboard.generateMoves(opponentColor);
+        if(moves.size() == 1){
+            if(moves.peek().isPass()){
+                moveMade = gameboard.applyMove(-1, opponentColor);
+                if(opponentColor == Black) System.out.println("B");
+                else System.out.println("W");
+                return moveMade;
+            }
+        }
          // determine best move
         int bestMove = 0;
         int highScore = Integer.MIN_VALUE;
@@ -275,11 +285,7 @@ public class Game {
         System.out.printf("C Best move is [%d] with score (%d)\n", moves.elementAt(bestMove).getPosition(), highScore);
 
          //apply best move
-        //check for Pass and inform the Referee
-        if(moves.elementAt(bestMove).isPass()){
-            if(opponentColor == Black) System.out.println("B");
-            else System.out.println("W");
-        }
+
         moveMade = gameboard.applyMove(moves.elementAt(bestMove).getPosition(), opponentColor);
         //pipe move to Referee
         int pipe = moves.elementAt(bestMove).getPosition();

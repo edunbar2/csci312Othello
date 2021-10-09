@@ -319,8 +319,7 @@ public class Board {
         Stack<Move> moves = this.generateMoves(player);
         // check stack for legal moves. may switch to priority queue for ease of access
         int index = -1;
-        if(moves.elementAt(0).isPass()){
-            System.out.println("C Passing");
+        if(moves.elementAt(0).isPass() || pos == -1){
             return true;
         }
         for (int i = 0; i < moves.size(); i++) {
@@ -622,7 +621,7 @@ public class Board {
     }
 
     public void printBoard() {
-        System.out.print("C     A B C D E F G H\nC  X X X X X X X X X X");
+        System.out.print("C     A B C D E F G H\nC   X X X X X X X X X X");
         for (int i = 10; i < board.length - 10; i++) {
             if (i % 10 == 0)
                 System.out.print("\nC "); // border has been reached
@@ -644,7 +643,7 @@ public class Board {
             } else if (board[i] == -2)
                 System.out.print("X ");
         }
-        System.out.println("\nC  X X X X X X X X X X");
+        System.out.println("\nC   X X X X X X X X X X");
     }
 
 }
