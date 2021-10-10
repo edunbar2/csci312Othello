@@ -1,9 +1,6 @@
 package edu.unca.csci312;
 
-import java.util.Locale;
-import java.util.Random;
-import java.util.Scanner;
-import java.util.Stack;
+import java.util.*;
 
 import static java.lang.System.exit;
 
@@ -13,7 +10,7 @@ public class Game {
     public static final int opponent = -1;
     public static final int White = 128;
     public static final int Black = 256;
-    public static final int depth = 8;
+    public static final int depth = 10;
 
     // variables
     public static Board gameboard;
@@ -58,12 +55,12 @@ public class Game {
             gameboard.printBoard();
             if (currentPlayer == player) {
                 moveTime = System.currentTimeMillis()/1000.0;
-                Stack<Move> moves = gameboard.generateMoves(myColor);
+                PriorityQueue<Move> moves = gameboard.generateMoves(myColor);
                 //int move = getInput("C What move do you want to make?");
-                int move = moves.elementAt(0).getPosition();
+                int move = moves.remove().getPosition();
                 if(move == -2){
                     Move node = new Move("P");
-                    moves.push(node);
+                    moves.add(node);
                     move = 0;
                 }
                 moveMade = gameboard.applyMove(move, myColor);
@@ -99,9 +96,9 @@ public class Game {
 
         if(count == 0 || board.getWhitePieces() == 0 || board.getBlackPieces() == 0)
             endGame = true;
-        Stack<Move> tempBlack = board.generateMoves(Black);
-        Stack<Move> tempWhite = board.generateMoves(White);
-        if(tempBlack.pop().isPass() && tempWhite.pop().isPass())
+        PriorityQueue<Move> tempBlack = board.generateMoves(Black);
+        PriorityQueue<Move> tempWhite = board.generateMoves(White);
+        if(tempBlack.remove().isPass() && tempWhite.remove().isPass())
             endGame = true;
        // if(playerTimer >= 90.0 || opponentTimer >= 90.0)
         //endGame = true;
@@ -263,7 +260,7 @@ public class Game {
 
         boolean moveMade = false;
          // generate current moves
-        Stack<Move> moves = gameboard.generateMoves(opponentColor);
+        PriorityQueue<Move> moves = gameboard.generateMoves(opponentColor);
         //check for pass
         if(moves.size() == 1){
             if(moves.peek().isPass()){
@@ -272,27 +269,30 @@ public class Game {
                 else System.out.println("W");
                 return moveMade;
             }else{
-                moveMade = gameboard.applyMove(moves.pop().getPosition(), opponentColor);
+                moveMade = gameboard.applyMove(moves.remove().getPosition(), opponentColor);
                 return moveMade;
             }
         }
          // determine best move
-        int bestMove = 0;
+        Move bestMove = new Move("PASS");
         int highScore = Integer.MIN_VALUE;
-        for(int i = 0; i < moves.size(); i++){
-            int eval = minimax(moves.elementAt(i), gameboard, depth, true, Integer.MIN_VALUE, Integer.MAX_VALUE);
-            if(eval > highScore){
+        Iterator<Move> it = moves.iterator();
+        while(it.hasNext()){
+            Move move = it.next();
+            int eval = minimax(move, gameboard, depth, true, Integer.MIN_VALUE, Integer.MAX_VALUE);
+            if(eval > highScore) {
                 highScore = eval;
-                bestMove++;
+                bestMove = move;
             }
         }
-        System.out.printf("C Best move is [%d] with score (%d)\n", moves.elementAt(bestMove).getPosition(), highScore);
+
+        System.out.printf("C Best move is [%d] with score (%d)\n", bestMove.getPosition(), highScore);
 
          //apply best move
 
-        moveMade = gameboard.applyMove(moves.elementAt(bestMove).getPosition(), opponentColor);
+        moveMade = gameboard.applyMove(bestMove.getPosition(), opponentColor);
         //pipe move to Referee
-        int pipe = moves.elementAt(bestMove).getPosition();
+        int pipe = bestMove.getPosition();
         int c = Integer.parseInt(Integer.toString(pipe).substring(1));
         String row = "";
         String column = "";
@@ -366,11 +366,11 @@ public class Game {
 
         if(minimax){
         int maxEval = Integer.MIN_VALUE;
-          Stack<Move> moves = tempBoard.generateMoves(myColor);
+          PriorityQueue<Move> moves = tempBoard.generateMoves(myColor);
          // System.out.println("C Moves to check at depth" + d +": " + moves.size());
           while(!moves.isEmpty()){
               int pos = moves.peek().getPosition();
-              int eval = minimax(moves.pop(), tempBoard, d-1, false, alpha, beta);
+              int eval = minimax(moves.remove(), tempBoard, d-1, false, alpha, beta);
              // System.out.printf("C Testing position (%d) with score %d \n", pos, eval);
               maxEval = Math.max(maxEval, eval);
               alpha = Math.max(alpha, maxEval);
@@ -379,11 +379,11 @@ public class Game {
           return maxEval;
         }else{
             int minEval = Integer.MAX_VALUE;
-            Stack<Move> moves = tempBoard.generateMoves(opponentColor);
+            PriorityQueue<Move> moves = tempBoard.generateMoves(opponentColor);
            //System.out.println("Moves to check at depth" + d +": " + moves.size());
             while(!moves.isEmpty()){
                 int pos = moves.peek().getPosition();
-                int eval = minimax(moves.pop(), tempBoard, d-1, true, alpha, beta);
+                int eval = minimax(moves.remove(), tempBoard, d-1, true, alpha, beta);
                // System.out.printf("C Testing position (%d) with score %d \n", pos, eval);
                 minEval = Math.min(minEval, eval);
                 beta = Math.min(minEval, beta);

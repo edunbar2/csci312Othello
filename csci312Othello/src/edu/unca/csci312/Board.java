@@ -1,9 +1,6 @@
 package edu.unca.csci312;
 
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Stack;
+import java.util.*;
 
 public class Board {
 
@@ -21,7 +18,6 @@ public class Board {
                     -20, 10,  2,  8,  8,  8,  8,  2, 10,-20,
                     -20,-20,-20,-20,-20,-20,-20,-20,-20,-20
             };
-
     // constants
     private static final int startWhite = 44; // tile D4
     private static final int startBlack = 45; // tile D5
@@ -67,8 +63,14 @@ public class Board {
      * @param color of tile being searched
      * @return Stack containing legal moves
      */
-    public Stack<Move> generateMoves(int color) {
-        Stack<Move> moves = new Stack<Move>();
+    public PriorityQueue<Move> generateMoves(int color) {
+        Comparator<Move> comparator = new Comparator<Move>() {
+            @Override
+            public int compare(Move o1, Move o2) {
+                return map[o1.getPosition()] - map[o2.getPosition()];
+            }
+        };
+        PriorityQueue<Move> moves = new PriorityQueue<Move>(comparator);
         // get players moves
         if (color == this.playerColor) {
             for (int i = 11; i < 89; i++) {
@@ -82,21 +84,21 @@ public class Board {
                     Move move7 = new Move(expand(i, "SW", 1));
                     Move move8 = new Move(expand(i, "W", 1));
                     if (move1.getPosition() != -1)
-                        moves.push(move1);
+                        moves.add(move1);
                     if (move2.getPosition() != -1)
-                        moves.push(move2);
+                        moves.add(move2);
                     if (move3.getPosition() != -1)
-                        moves.push(move3);
+                        moves.add(move3);
                     if (move4.getPosition() != -1)
-                        moves.push(move4);
+                        moves.add(move4);
                     if (move5.getPosition() != -1)
-                        moves.push(move5);
+                        moves.add(move5);
                     if (move6.getPosition() != -1)
-                        moves.push(move6);
+                        moves.add(move6);
                     if (move7.getPosition() != -1)
-                        moves.push(move7);
+                        moves.add(move7);
                     if (move8.getPosition() != -1)
-                        moves.push(move8);
+                        moves.add(move8);
 
                 }
             }
@@ -114,21 +116,21 @@ public class Board {
                     Move move7 = new Move(expand(i, "SW", -1));
                     Move move8 = new Move(expand(i, "W", -1));
                     if (move1.getPosition() != -1)
-                        moves.push(move1);
+                        moves.add(move1);
                     if (move2.getPosition() != -1)
-                        moves.push(move2);
+                        moves.add(move2);
                     if (move3.getPosition() != -1)
-                        moves.push(move3);
+                        moves.add(move3);
                     if (move4.getPosition() != -1)
-                        moves.push(move4);
+                        moves.add(move4);
                     if (move5.getPosition() != -1)
-                        moves.push(move5);
+                        moves.add(move5);
                     if (move6.getPosition() != -1)
-                        moves.push(move6);
+                        moves.add(move6);
                     if (move7.getPosition() != -1)
-                        moves.push(move7);
+                        moves.add(move7);
                     if (move8.getPosition() != -1)
-                        moves.push(move8);
+                        moves.add(move8);
                 }
             }
 
@@ -136,16 +138,7 @@ public class Board {
 
         if (moves.size() == 0) {
             Move pass = new Move("P");
-            moves.push(pass);
-        }else{
-            int[] array = new int[moves.size()];
-            for(int i = 0; i < moves.size(); i++){
-                array[i] = moves.elementAt(i).getPosition();
-            }
-            Arrays.sort(array);
-            for(int i = 0; i < moves.size(); i++){
-                moves.elementAt(i).setPosition(array[i]);
-            }
+            moves.add(pass);
         }
 
 
@@ -332,17 +325,20 @@ public class Board {
      */
     public boolean applyMove(int pos, int player) {
         //Generate moves for player
-        Stack<Move> moves = this.generateMoves(player);
+        PriorityQueue<Move> moves = this.generateMoves(player);
         // check stack for legal moves. may switch to priority queue for ease of access
         int index = -1;
-        if(moves.elementAt(0).isPass() || pos == -1){
+        if(moves.peek().isPass() || pos == -1){
             this.movesMade++;
             return true;
         }
-        for (int i = 0; i < moves.size(); i++) {
-            if (moves.elementAt(i).getPosition() == pos) {
+        int i = 0;
+        Iterator<Move> it = moves.iterator();
+        while(it.hasNext()){
+            i++;
+            Move temp = it.next();
+            if(temp.getPosition() == pos){
                 index = i;
-                break;
             }
         }
         if (index != -1) {
@@ -546,6 +542,9 @@ public class Board {
 
     public int[] getBoard() {
         return this.board;
+    }
+    public int[] getMap(){
+        return map;
     }
 
     public int getBlackPieces() {

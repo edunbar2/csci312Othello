@@ -1,6 +1,8 @@
 package edu.unca.csci312;
 
-public class Move {
+import java.util.Comparator;
+
+public class Move{
 
     //instance variables
     private int position;
