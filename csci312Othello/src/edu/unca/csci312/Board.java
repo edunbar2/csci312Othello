@@ -1,11 +1,13 @@
 package edu.unca.csci312;
 
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Stack;
 
 public class Board {
 
-    //pressuremap
+    //weight map
     private static final int[] map =
             {
                     -20,-20,-20,-20,-20,-20,-20,-20,-20,-20,
@@ -32,16 +34,18 @@ public class Board {
     // instance variables
     private int[] board;
     private int playerColor;
-    private int opponentColor;
+    private int AIColor;
+    private int movesMade;
 
 
     // constructors
     public Board(int playerColor) {
         this.playerColor = playerColor;
-        if(this.playerColor == White) this.opponentColor = Black;
-        else this.opponentColor =White;
+        if(this.playerColor == White) this.AIColor = Black;
+        else this.AIColor =White;
         this.board = new int[100];
         initialize(this.playerColor);
+        this.movesMade = 0;
         if(this.playerColor == Black){
             System.out.println("R W");
         }else if(this.playerColor == White){
@@ -51,6 +55,7 @@ public class Board {
 
     public Board(Board copy) {
         this.playerColor = copy.getPlayerColor();
+        this.movesMade = copy.movesMade;
         this.board = new int[100];
         System.arraycopy(copy.board,0, this.board, 0, 100);
 
@@ -128,10 +133,21 @@ public class Board {
             }
 
         }
+
         if (moves.size() == 0) {
             Move pass = new Move("P");
             moves.push(pass);
+        }else{
+            int[] array = new int[moves.size()];
+            for(int i = 0; i < moves.size(); i++){
+                array[i] = moves.elementAt(i).getPosition();
+            }
+            Arrays.sort(array);
+            for(int i = 0; i < moves.size(); i++){
+                moves.elementAt(i).setPosition(array[i]);
+            }
         }
+
 
         return moves;
     }
@@ -320,6 +336,7 @@ public class Board {
         // check stack for legal moves. may switch to priority queue for ease of access
         int index = -1;
         if(moves.elementAt(0).isPass() || pos == -1){
+            this.movesMade++;
             return true;
         }
         for (int i = 0; i < moves.size(); i++) {
@@ -337,7 +354,7 @@ public class Board {
                 flipTiles(pos, 1);
             else
                 flipTiles(pos, -1);
-
+            this.movesMade++;
             return true; // notify game class of completion
         } else {
             System.out.println("C invalid move, try again");
@@ -550,74 +567,124 @@ public class Board {
     }
 
     /**
+     * This function calculates the number of tiles for a player with empty spaces around them
+     * @return number of tiles with empty spaces surrounding
+     */
+    private int getPotential1(Board currentBoard, int side){
+        int blanks = 0;
+        for(int i = 11; i < 89; i++){
+            if(currentBoard.board[i] == side)
+                blanks++;
+        }
+        return blanks;
+    }
+    private int getPotential2(Board currentBoard, int side){
+        int blanks = 0;
+        for(int i = 11; i < 89; i++){
+            if(currentBoard.board[i] == side){
+                getBlanks(currentBoard, i);
+            }
+        }
+        return blanks;
+    }
+
+    private int getBlanks(Board currentBoard, int pos){
+        int nearbyBlanks = 0;
+        //check each surrounding area for blanks
+        if(currentBoard.board[getNW(pos)] == 0)
+            nearbyBlanks++;
+        if(currentBoard.board[getN(pos)] == 0)
+            nearbyBlanks++;
+        if(currentBoard.board[getNE(pos)] == 0)
+            nearbyBlanks++;
+        if(currentBoard.board[getE(pos)] == 0)
+            nearbyBlanks++;
+        if(currentBoard.board[getSE(pos)] == 0)
+            nearbyBlanks++;
+        if(currentBoard.board[getS(pos)] == 0)
+            nearbyBlanks++;
+        if(currentBoard.board[getSW(pos)] == 0)
+            nearbyBlanks++;
+        if(currentBoard.board[getW(pos)] == 0)
+            nearbyBlanks++;
+
+        return nearbyBlanks;
+    }
+
+    /**
      * This function takes in the board to be evaluated and adds up the score of the player.
      * This score is generated using the equation
-     * %weightmap + %moves + %corners
-     * This equation uses a weight map and several biases to shift importance from one statistic to another.
+     * current mobility * potential mobility * net pieces * stability
      * @return value of board
      */
     public int evaluate(Board currentBoard) {
-        int boardValue = 0;
-        int playerValue = 0;
-        for(int i = 11; i < 89; i++){ // get value of the current board
-            if(i%10 != 0 && (i+1)%10 != 0){
-                if(currentBoard.getBoard()[i] == opponent) {
-                    boardValue += map[i] * map[i];
-                }
-                else if(currentBoard.board[i] == player) {
-                    playerValue += map[i] * map[i];
-                }
-            }
+        int score = 0;
+        //part 1: current mobility
+        int AIMoves = currentBoard.generateMoves(AIColor).size();
+        int opponentMoves = currentBoard.generateMoves(playerColor).size();
+        int currentMobility = 100* ((AIMoves-opponentMoves)/(AIMoves+opponentMoves));
+
+        //part 2: potential mobility
+        int AIPotential = getPotential1(currentBoard, opponent);
+        int playerPotential = getPotential1(currentBoard, player);
+        int AIAdvancedPotential = getPotential2(currentBoard, opponent);
+        int playerAdvancedPotential = getPotential2(currentBoard, player);
+        int finalAIP = AIPotential * AIAdvancedPotential;
+        int finalPlayerP = playerPotential * playerAdvancedPotential;
+        int potentialMobility = 0;
+        if(finalAIP > 0 && finalPlayerP > 0)
+             potentialMobility = 100 * ((finalAIP+finalPlayerP)/(finalAIP-finalPlayerP));
+
+        //part 3: net pieces:
+        int AIPieces = 0;
+        int playerPieces = 0;
+        for(int i = 11; i < 89; i++){
+            if(currentBoard.board[i] == opponent)
+                AIPieces++;
+            else if(currentBoard.board[i] == player)
+                playerPieces++;
         }
-        //calculate value of weight map
-        double weights = 1.0;
-        if(boardValue != 0 && playerValue != 0)
-        weights = 100 * (((boardValue)-(playerValue)) / ((boardValue)+(playerValue)));
+        int netPieces = 1;
+        if(AIPieces > 0 && playerPieces > 0)
+            netPieces = 100* ((AIPieces-playerPieces)/(AIPieces+playerPieces));
 
-         // get number of moves
-        double numMoves;
-        double opponentMoves;
-        if(playerColor == White){
-            numMoves = currentBoard.generateMoves(Black).size() + 0.1;
-            opponentMoves = currentBoard.generateMoves(White).size() + 0.1;
-        }else{
-            numMoves = currentBoard.generateMoves(White).size() + 0.1;
-            opponentMoves = currentBoard.generateMoves(Black).size() + 0.1;
-        }
-
-        //calculate value of moves
-        double moves = 1.0;
-        if(numMoves > 0 && opponentMoves > 0)
-         moves = numMoves/opponentMoves;
-        else moves = numMoves;
-
-        //get number of corners captured
-        double AICorners = 0.1;
-        int playerCorners = 0;
-        if(currentBoard.board[11] == -1) AICorners++;
-        else if(currentBoard.board[11] == 1) playerCorners++;
-        if(currentBoard.board[18] == -1) AICorners++;
-        else if(currentBoard.board[18] == 1) playerCorners++;
-        if(currentBoard.board[81] == -1) AICorners++;
-        else if(currentBoard.board[81] == 1) playerCorners++;
-        if(currentBoard.board[88] == -1) AICorners++;
-        else if(currentBoard.board[88] == 1) playerCorners++;
-        //calculate value of corners
-        double corners = 1.1;
-        if(AICorners != 0 && playerCorners != 0)
-            corners = 100 * ((AICorners-playerCorners)/(AICorners+playerCorners));
+        //part 4: stability
 
 
+        int stability = 1;
 
-         // evaluate score important mid-game
-        double score =   (weights*2.5) + (4.6*moves) + (4.0*corners);
-        if(Game.gameOver(this)){
-            int blackPieces = currentBoard.getBlackPieces();
-            int whitePieces = currentBoard.getWhitePieces();
-            if(Game.getWinner(blackPieces, whitePieces) == opponentColor) score += 10000000;
-            else score -= 10000000;
-        }
-        return (int) score;
+         // get weight for mobility
+        int CMWeight = 0;
+        if(movesMade < 20)
+            CMWeight = 10;
+        else if(movesMade > 20 && movesMade < 30)
+            CMWeight = 7;
+        else if(movesMade > 30)
+            CMWeight = 5;
+         // get weight for potential mobility
+        int PMWeight = 0;
+        if(movesMade < 20)
+            PMWeight = 8;
+        else if(movesMade > 20 && movesMade < 30)
+            PMWeight = 6;
+        else if(movesMade > 30)
+            PMWeight = 4;
+         // get weight for net pieces
+        int netWeight = 0;
+        if(currentBoard.movesMade < 10)
+            netWeight = 1;
+        else if(currentBoard.movesMade > 10 && currentBoard.movesMade < 20)
+            netWeight = 3;
+        else if(currentBoard.movesMade > 20 && currentBoard.movesMade < 30)
+            netWeight = 5;
+        else netWeight = 7;
+
+         // stability weight remains constant
+        int stabilityWeight = 3;
+         // calculate score
+       score = (CMWeight * currentMobility) + (PMWeight * potentialMobility)
+               + (netWeight * netPieces) + (stabilityWeight * stability);
+        return score;
     }
 
     public void printBoard() {

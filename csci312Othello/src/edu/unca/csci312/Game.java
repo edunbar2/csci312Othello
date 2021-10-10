@@ -13,7 +13,7 @@ public class Game {
     public static final int opponent = -1;
     public static final int White = 128;
     public static final int Black = 256;
-    public static final int depth = 7;
+    public static final int depth = 8;
 
     // variables
     public static Board gameboard;
@@ -39,7 +39,7 @@ public class Game {
         while (opponentColor != Black && opponentColor != White) {
             opponentColor = getInput("C What color do you want to play?");
         }
-        //set opponent color
+        //set color
         if(opponentColor == Black) myColor = White;
         else myColor = Black;
 
@@ -60,7 +60,7 @@ public class Game {
                 moveTime = System.currentTimeMillis()/1000.0;
                 Stack<Move> moves = gameboard.generateMoves(myColor);
                 //int move = getInput("C What move do you want to make?");
-                int move = moves.elementAt(ran.nextInt(moves.size())).getPosition();
+                int move = moves.elementAt(0).getPosition();
                 if(move == -2){
                     Move node = new Move("P");
                     moves.push(node);
@@ -249,11 +249,11 @@ public class Game {
 
     public static int getWinner(int blackPieces, int whitePieces) {
 
-        if (playerTimer >= 90.0)
-            return opponentColor;
-        else if (opponentTimer >= 90.0)
-            return myColor;
-        else if (blackPieces > whitePieces)
+        //if (playerTimer >= 90.0)
+            //return opponentColor;
+        //else if (opponentTimer >= 90.0)
+           // return myColor;
+        if (blackPieces > whitePieces)
             return Black;
         else
             return White;
@@ -264,11 +264,15 @@ public class Game {
         boolean moveMade = false;
          // generate current moves
         Stack<Move> moves = gameboard.generateMoves(opponentColor);
+        //check for pass
         if(moves.size() == 1){
             if(moves.peek().isPass()){
                 moveMade = gameboard.applyMove(-1, opponentColor);
                 if(opponentColor == Black) System.out.println("B");
                 else System.out.println("W");
+                return moveMade;
+            }else{
+                moveMade = gameboard.applyMove(moves.pop().getPosition(), opponentColor);
                 return moveMade;
             }
         }
@@ -349,20 +353,24 @@ public class Game {
      * @return score for that move/line.
      */
     private static int minimax(Move move, Board copy, int d, boolean minimax, int alpha, int beta) {
-      // System.out.println("C Checking at depth: " + d + " out of " + depth);
+      //apply move
+        Board tempBoard = new Board(copy);
+        if(minimax)
+            tempBoard.applyMove(move.getPosition(), opponentColor);
+        else
+            tempBoard.applyMove(move.getPosition(), myColor);
+        // System.out.println("C Checking at depth: " + d + " out of " + depth);
         if(d == 0 || gameOver(copy))
             return copy.evaluate(copy);
 
-        Board tempBoard = new Board(copy);
+
         if(minimax){
         int maxEval = Integer.MIN_VALUE;
-          tempBoard.applyMove(move.getPosition(),opponentColor);
           Stack<Move> moves = tempBoard.generateMoves(myColor);
-
          // System.out.println("C Moves to check at depth" + d +": " + moves.size());
           while(!moves.isEmpty()){
               int pos = moves.peek().getPosition();
-              int eval = tempBoard.evaluate(tempBoard) + minimax(moves.pop(), tempBoard, d-1, false, alpha, beta);
+              int eval = minimax(moves.pop(), tempBoard, d-1, false, alpha, beta);
              // System.out.printf("C Testing position (%d) with score %d \n", pos, eval);
               maxEval = Math.max(maxEval, eval);
               alpha = Math.max(alpha, maxEval);
@@ -371,12 +379,11 @@ public class Game {
           return maxEval;
         }else{
             int minEval = Integer.MAX_VALUE;
-            tempBoard.applyMove(move.getPosition(), myColor);
             Stack<Move> moves = tempBoard.generateMoves(opponentColor);
            //System.out.println("Moves to check at depth" + d +": " + moves.size());
             while(!moves.isEmpty()){
                 int pos = moves.peek().getPosition();
-                int eval = tempBoard.evaluate(tempBoard) + minimax(moves.pop(), tempBoard, d-1, true, alpha, beta);
+                int eval = minimax(moves.pop(), tempBoard, d-1, true, alpha, beta);
                // System.out.printf("C Testing position (%d) with score %d \n", pos, eval);
                 minEval = Math.min(minEval, eval);
                 beta = Math.min(minEval, beta);
