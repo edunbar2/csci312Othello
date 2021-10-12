@@ -20,28 +20,43 @@ public class Move{
 
     public String printMove() {
         String ret = "";
-        if(pass) return "Pass";
-        int temp = position % 10;
-        switch(temp){
+        int pipe = position;
+        int c = Integer.parseInt(Integer.toString(pipe).substring(1));
+        String row = "";
+        String column = "";
+        pipe -= c;
+        pipe = pipe/10;
+        row += Integer.toString((pipe));
+        switch(c) {
             case 1:
-                ret += "A";
+                column += "a ";
+                break;
             case 2:
-                ret += "B";
+                column += "b ";
+                break;
             case 3:
-                ret += "C";
+                column += "c ";
+                break;
             case 4:
-                ret += "D";
+                column += "d ";
+                break;
             case 5:
-                ret += "E";
+                column += "e ";
+                break;
             case 6:
-                ret += "F";
+                column += "f ";
+                break;
             case 7:
-                ret += "G";
+                column += "g ";
+                break;
             case 8:
-                ret += "H";
+                column += "h ";
+                break;
+            default:
+                break;
         }
-        temp = position/10;
-        ret += temp;
+        ret += column + row;
+
         return ret;
     }
 

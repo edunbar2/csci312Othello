@@ -9,11 +9,11 @@ public class Board {
             {
                     -20,-20,-20,-20,-20,-20,-20,-20,-20,-20,
                     -20, 10,  2,  8,  8 , 8 , 8 , 2 ,10,-20,
-                    -20,  2,  1,  2,  2,  2,  2,  1,  2,-20,
-                    -20,  8,  2,  5,  5,  5,  5,  2,  8,-20,
-                    -20,  8,  2,  5,  6,  6,  5,  2,  8,-20,
-                    -20,  8,  2,  5,  6,  6,  5,  2,  8,-20,
-                    -20,  8,  2,  5,  5,  5,  5,  2,  8,-20,
+                    -20,  2,  1,  3,  3,  3,  3,  1,  2,-20,
+                    -20,  8,  3,  5,  5,  5,  5,  3,  8,-20,
+                    -20,  8,  3,  5,  6,  6,  5,  3,  8,-20,
+                    -20,  8,  3,  5,  6,  6,  5,  3,  8,-20,
+                    -20,  8,  3,  5,  5,  5,  5,  3,  8,-20,
                     -20,  2,  1,  3,  3,  3,  3,  1,  2,-20,
                     -20, 10,  2,  8,  8,  8,  8,  2, 10,-20,
                     -20,-20,-20,-20,-20,-20,-20,-20,-20,-20
@@ -67,7 +67,7 @@ public class Board {
         Comparator<Move> comparator = new Comparator<Move>() {
             @Override
             public int compare(Move o1, Move o2) {
-                return map[o1.getPosition()] - map[o2.getPosition()];
+                return map[o2.getPosition()] - map[o1.getPosition()];
             }
         };
         PriorityQueue<Move> moves = new PriorityQueue<Move>(comparator);
@@ -540,11 +540,8 @@ public class Board {
         return this.playerColor;
     }
 
-    public int[] getBoard() {
+    public int[] getBoard(){
         return this.board;
-    }
-    public int[] getMap(){
-        return map;
     }
 
     public int getBlackPieces() {
@@ -617,40 +614,42 @@ public class Board {
      * @return value of board
      */
     public int evaluate(Board currentBoard) {
-        int score = 0;
+        double score = 0;
         //part 1: current mobility
-        int AIMoves = currentBoard.generateMoves(AIColor).size();
-        int opponentMoves = currentBoard.generateMoves(playerColor).size();
-        int currentMobility = 100* ((AIMoves-opponentMoves)/(AIMoves+opponentMoves));
+        double AIMoves = currentBoard.generateMoves(AIColor).size();
+        double opponentMoves = currentBoard.generateMoves(playerColor).size();
+        double currentMobility = 1;
+        if(AIMoves > 0 && opponentMoves > 0)
+        currentMobility = 100* ((AIMoves-opponentMoves)/(AIMoves+opponentMoves));
 
         //part 2: potential mobility
-        int AIPotential = getPotential1(currentBoard, opponent);
-        int playerPotential = getPotential1(currentBoard, player);
-        int AIAdvancedPotential = getPotential2(currentBoard, opponent);
-        int playerAdvancedPotential = getPotential2(currentBoard, player);
-        int finalAIP = AIPotential * AIAdvancedPotential;
-        int finalPlayerP = playerPotential * playerAdvancedPotential;
-        int potentialMobility = 0;
+        double AIPotential = getPotential1(currentBoard, opponent);
+        double playerPotential = getPotential1(currentBoard, player);
+        double AIAdvancedPotential = getPotential2(currentBoard, opponent);
+        double playerAdvancedPotential = getPotential2(currentBoard, player);
+        double finalAIP = AIPotential * AIAdvancedPotential;
+        double finalPlayerP = playerPotential * playerAdvancedPotential;
+        double potentialMobility = 1;
         if(finalAIP > 0 && finalPlayerP > 0)
              potentialMobility = 100 * ((finalAIP+finalPlayerP)/(finalAIP-finalPlayerP));
 
         //part 3: net pieces:
-        int AIPieces = 0;
-        int playerPieces = 0;
+        double AIPieces = 0;
+        double playerPieces = 0;
         for(int i = 11; i < 89; i++){
             if(currentBoard.board[i] == opponent)
                 AIPieces++;
             else if(currentBoard.board[i] == player)
                 playerPieces++;
         }
-        int netPieces = 1;
+        double netPieces = 1;
         if(AIPieces > 0 && playerPieces > 0)
             netPieces = 100* ((AIPieces-playerPieces)/(AIPieces+playerPieces));
 
         //part 4: stability
 
 
-        int stability = 1;
+        double stability = 1;
 
          // get weight for mobility
         int CMWeight = 0;
@@ -681,9 +680,19 @@ public class Board {
          // stability weight remains constant
         int stabilityWeight = 3;
          // calculate score
-       score = (CMWeight * currentMobility) + (PMWeight * potentialMobility)
-               + (netWeight * netPieces) + (stabilityWeight * stability);
-        return score;
+       score = (CMWeight * currentMobility) * (PMWeight * potentialMobility)
+               * (netWeight * netPieces) * (stabilityWeight * stability);
+
+       if(Game.gameOver(currentBoard)){
+           int blackP = currentBoard.getBlackPieces();
+           int whiteP = currentBoard.getWhitePieces();
+           if(Game.getWinner(blackP, whiteP) == AIColor){
+               score += 99999;
+           }else if(Game.getWinner(blackP, whiteP) == playerColor){
+               score -= 99999;
+           }
+       }
+        return (int) score;
     }
 
     public void printBoard() {

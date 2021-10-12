@@ -10,7 +10,7 @@ public class Game {
     public static final int opponent = -1;
     public static final int White = 128;
     public static final int Black = 256;
-    public static final int depth = 10;
+    public static final double timePerMove = 20.0;
 
     // variables
     public static Board gameboard;
@@ -70,7 +70,7 @@ public class Game {
 
             }else if(currentPlayer == opponent) {
                 moveTime = System.currentTimeMillis()/1000.0;
-                moveMade =getAIMove();
+                moveMade = getAIMove(moveTime);
                 moveTime = (System.currentTimeMillis()/1000.0)-moveTime;
                 opponentTimer += moveTime; //add time taken to timer
             }
@@ -247,17 +247,18 @@ public class Game {
     public static int getWinner(int blackPieces, int whitePieces) {
 
         //if (playerTimer >= 90.0)
-            //return opponentColor;
+          //  return opponentColor;
         //else if (opponentTimer >= 90.0)
-           // return myColor;
+          //  return myColor;
         if (blackPieces > whitePieces)
             return Black;
         else
             return White;
     }
 
-    public static boolean getAIMove(){
-
+    public static boolean getAIMove(double startTime){
+        double currentTime = System.currentTimeMillis();
+        int depth = 2;
         boolean moveMade = false;
          // generate current moves
         PriorityQueue<Move> moves = gameboard.generateMoves(opponentColor);
@@ -274,16 +275,36 @@ public class Game {
             }
         }
          // determine best move
-        Move bestMove = new Move("PASS");
+        int eval;
+        Move bestMove = new Move("P");
         int highScore = Integer.MIN_VALUE;
         Iterator<Move> it = moves.iterator();
         while(it.hasNext()){
             Move move = it.next();
-            int eval = minimax(move, gameboard, depth, true, Integer.MIN_VALUE, Integer.MAX_VALUE);
-            if(eval > highScore) {
-                highScore = eval;
-                bestMove = move;
+            int alpha = Integer.MIN_VALUE;
+            int beta = Integer.MAX_VALUE;
+            //iterative deepening
+            currentTime = System.currentTimeMillis()/1000.0;
+            double sigmaMT = System.currentTimeMillis()/1000.0 - currentTime;
+            while(sigmaMT < timePerMove) {
+                System.out.printf("C Searching move %s at depth: %d\n", move.printMove(), depth);
+                eval = Integer.MIN_VALUE;
+
+                eval = minimax(move, gameboard, depth, true, alpha, beta, currentTime);
+                if (eval > highScore) {
+                    highScore = eval;
+                    bestMove = move;
+                }else if(eval == Integer.MIN_VALUE){
+                    System.out.printf("Search failed at Depth %d", depth);
+                }
+                //Null window search
+                alpha = highScore;
+                beta = alpha+1;
+                depth += 2;
+                sigmaMT += System.currentTimeMillis()/1000.0 - currentTime;
+                System.out.printf("C SigmaMT = %.2f\n", sigmaMT);
             }
+            depth = 2;
         }
 
         System.out.printf("C Best move is [%d] with score (%d)\n", bestMove.getPosition(), highScore);
@@ -291,46 +312,12 @@ public class Game {
          //apply best move
 
         moveMade = gameboard.applyMove(bestMove.getPosition(), opponentColor);
-        //pipe move to Referee
-        int pipe = bestMove.getPosition();
-        int c = Integer.parseInt(Integer.toString(pipe).substring(1));
-        String row = "";
-        String column = "";
-        pipe -= c;
-        pipe = pipe/10;
-        row += Integer.toString((pipe));
-        switch(c){
-            case 1:
-                column += "a ";
-                break;
-            case 2:
-                column += "b ";
-                break;
-            case 3:
-                column += "c ";
-                break;
-            case 4:
-                column += "d ";
-                break;
-            case 5:
-                column += "e ";
-                break;
-            case 6:
-                column += "f ";
-                break;
-            case 7:
-                column += "g ";
-                break;
-            case 8:
-                column += "h ";
-                break;
-            default: break;
-        }
+
 
         String out = "";
         if(opponentColor == Black) out += "B ";
         else out += "W ";
-        out += column + row;
+        out += bestMove.printMove();
         System.out.println(out);
 
         //return moveMade
@@ -352,7 +339,10 @@ public class Game {
      * @param beta is the best value the minimizer can currently promise
      * @return score for that move/line.
      */
-    private static int minimax(Move move, Board copy, int d, boolean minimax, int alpha, int beta) {
+    private static int minimax(Move move, Board copy, int d, boolean minimax, int alpha, int beta, double startTime) {
+        if((System.currentTimeMillis()/1000) - startTime > timePerMove) {
+            return Integer.MIN_VALUE;
+        }
       //apply move
         Board tempBoard = new Board(copy);
         if(minimax)
@@ -370,7 +360,7 @@ public class Game {
          // System.out.println("C Moves to check at depth" + d +": " + moves.size());
           while(!moves.isEmpty()){
               int pos = moves.peek().getPosition();
-              int eval = minimax(moves.remove(), tempBoard, d-1, false, alpha, beta);
+              int eval = minimax(moves.remove(), tempBoard, d-1, false, alpha, beta, startTime);
              // System.out.printf("C Testing position (%d) with score %d \n", pos, eval);
               maxEval = Math.max(maxEval, eval);
               alpha = Math.max(alpha, maxEval);
@@ -383,7 +373,7 @@ public class Game {
            //System.out.println("Moves to check at depth" + d +": " + moves.size());
             while(!moves.isEmpty()){
                 int pos = moves.peek().getPosition();
-                int eval = minimax(moves.remove(), tempBoard, d-1, true, alpha, beta);
+                int eval = minimax(moves.remove(), tempBoard, d-1, true, alpha, beta, startTime);
                // System.out.printf("C Testing position (%d) with score %d \n", pos, eval);
                 minEval = Math.min(minEval, eval);
                 beta = Math.min(minEval, beta);
