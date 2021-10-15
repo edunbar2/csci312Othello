@@ -48,7 +48,7 @@ public class Game {
         else
             currentPlayer = opponent;
 
-        while (!gameOver(gameboard)) {
+        while (!Board.gameOver(gameboard)) {
             System.out.printf("C Player time: %f\n", playerTimer);
             System.out.printf("C AI time: %f\n", opponentTimer);
 
@@ -85,26 +85,7 @@ public class Game {
         endGame();
     }
 
-    public static boolean gameOver(Board board) {
-        boolean endGame = false;
-        int count = 0;
-        for(int i = 0; i < 100; i++) {
-            if(board.getBoard()[i] == 0) {
-                count++;
-            }
-        }
 
-        if(count == 0 || board.getWhitePieces() == 0 || board.getBlackPieces() == 0)
-            endGame = true;
-        PriorityQueue<Move> tempBlack = board.generateMoves(Black);
-        PriorityQueue<Move> tempWhite = board.generateMoves(White);
-        if(tempBlack.remove().isPass() && tempWhite.remove().isPass())
-            endGame = true;
-       // if(playerTimer >= 90.0 || opponentTimer >= 90.0)
-        //endGame = true;
-
-        return endGame;
-    }
 
     public static int getInput(String question) {
         Scanner input = new Scanner(System.in);
@@ -131,7 +112,7 @@ public class Game {
     public static int interpretInput(String input) {
 
         if(input.equals("n")){
-            if(gameOver(gameboard)){
+            if(Board.gameOver(gameboard)){
                endGame();
             }
         }
@@ -350,7 +331,7 @@ public class Game {
         else
             tempBoard.applyMove(move.getPosition(), myColor);
         // System.out.println("C Checking at depth: " + d + " out of " + depth);
-        if(d == 0 || gameOver(copy))
+        if(d == 0 || Board.gameOver(copy))
             return copy.evaluate(copy);
 
 

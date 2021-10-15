@@ -540,6 +540,10 @@ public class Board {
         return this.playerColor;
     }
 
+    public int getAIColor(){
+        return this.AIColor;
+    }
+
     public int[] getBoard(){
         return this.board;
     }
@@ -683,7 +687,7 @@ public class Board {
        score = (CMWeight * currentMobility) * (PMWeight * potentialMobility)
                * (netWeight * netPieces) * (stabilityWeight * stability);
 
-       if(Game.gameOver(currentBoard)){
+       if(gameOver(currentBoard)){
            int blackP = currentBoard.getBlackPieces();
            int whiteP = currentBoard.getWhitePieces();
            if(Game.getWinner(blackP, whiteP) == AIColor){
@@ -693,6 +697,27 @@ public class Board {
            }
        }
         return (int) score;
+    }
+
+    public static boolean gameOver(Board board) {
+        boolean endGame = false;
+        int count = 0;
+        for(int i = 0; i < 100; i++) {
+            if(board.getBoard()[i] == 0) {
+                count++;
+            }
+        }
+
+        if(count == 0 || board.getWhitePieces() == 0 || board.getBlackPieces() == 0)
+            endGame = true;
+        PriorityQueue<Move> tempBlack = board.generateMoves(Black);
+        PriorityQueue<Move> tempWhite = board.generateMoves(White);
+        if(tempBlack.remove().isPass() && tempWhite.remove().isPass())
+            endGame = true;
+        // if(playerTimer >= 90.0 || opponentTimer >= 90.0)
+        //endGame = true;
+
+        return endGame;
     }
 
     public void printBoard() {
