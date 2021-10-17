@@ -1,7 +1,10 @@
 package MontyCarloAI;
 /**
  * @Author Eric Dunbar
- * Inspiration from
+ * Inspiration from:
+ * https://medium.com/@quasimik/monte-carlo-tree-search-applied-to-letterpress-34f41c86e238
+ * https://www.baeldung.com/java-monte-carlo-tree-search
+ * https://www.geeksforgeeks.org/ml-monte-carlo-tree-search-mcts/
  */
 
 import edu.unca.csci312.*;
