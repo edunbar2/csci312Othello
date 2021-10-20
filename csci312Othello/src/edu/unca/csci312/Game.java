@@ -93,6 +93,11 @@ public class Game {
         while (ret == -1) {
             System.out.println(question);
             String temp = input.nextLine();
+            if(temp.charAt(0) >= '0' && temp.charAt(0) <= '9'){
+                if(Board.gameOver(gameboard)){
+                    endGame();
+                }
+            }
             ret = interpretInput(temp);
         }
         if(ret == 0){
