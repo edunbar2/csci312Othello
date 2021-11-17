@@ -1,5 +1,7 @@
 package edu.unca.csci312;
 
+import MonteCarloAI.MonteCarloSearch;
+
 import java.util.*;
 
 import static java.lang.System.exit;
@@ -10,7 +12,8 @@ public class Game {
     public static final int opponent = -1;
     public static final int White = 128;
     public static final int Black = 256;
-    public static final double timePerMove = 20.0;
+    public static final double GameTime = 600;
+    public static final double expectedMoves = 70.0;
 
     // variables
     public static Board gameboard;
@@ -70,7 +73,7 @@ public class Game {
 
             }else if(currentPlayer == opponent) {
                 moveTime = System.currentTimeMillis()/1000.0;
-                moveMade = getAIMove(moveTime);
+                moveMade = getAIMove_MCTS(moveTime);
                 moveTime = (System.currentTimeMillis()/1000.0)-moveTime;
                 opponentTimer += moveTime; //add time taken to timer
             }
@@ -222,7 +225,7 @@ public class Game {
         int remainingBlack = gameboard.getBlackPieces();
         int remainingWhite = gameboard.getWhitePieces();
         System.out.println("C Black pieces remaining: " + remainingBlack);
-        int winner = getWinner(remainingBlack, remainingWhite);
+        int winner = getWinner(remainingBlack, remainingWhite, true);
         if(winner == Black) System.out.println("C Black Wins!");
         else System.out.println("C White wins!");
         //tell other program to check for game over
@@ -230,24 +233,34 @@ public class Game {
         exit(0);
     }
 
-    public static int getWinner(int blackPieces, int whitePieces) {
+    public static int getWinner(int blackPieces, int whitePieces, boolean timing) {
 
-        //if (playerTimer >= 90.0)
-          //  return opponentColor;
-        //else if (opponentTimer >= 90.0)
-          //  return myColor;
+        if (timing) {
+           if (playerTimer >= 90.0)
+              return opponentColor;
+            else if (opponentTimer >= 90.0)
+              return myColor;
+        }
+
         if (blackPieces > whitePieces)
             return Black;
         else
             return White;
     }
 
-    public static boolean getAIMove(double startTime){
+    /**
+     * This function uses the minimax algorithm to determine the best move
+     * NOTE: this function currently does not work.
+     * @param startTime Time when function started
+     * @return best move according to Minimax with Alpha Beta
+     */
+    public static boolean getAIMove_AlphaBeta(double startTime){
         double currentTime = System.currentTimeMillis();
         int depth = 2;
         boolean moveMade = false;
          // generate current moves
         PriorityQueue<Move> moves = gameboard.generateMoves(opponentColor);
+        double timePerMove = (GameTime / expectedMoves) / moves.size();
         //check for pass
         if(moves.size() == 1){
             if(moves.peek().isPass()){
@@ -276,7 +289,7 @@ public class Game {
                 System.out.printf("C Searching move %s at depth: %d\n", move.printMove(), depth);
                 eval = Integer.MIN_VALUE;
 
-                eval = minimax(move, gameboard, depth, true, alpha, beta, currentTime);
+                eval = minimax(move, gameboard, depth, true, alpha, beta, currentTime, timePerMove);
                 if (eval > highScore) {
                     highScore = eval;
                     bestMove = move;
@@ -313,6 +326,23 @@ public class Game {
     }
 
     /**
+     * This function uses the Monte Carlo Tree Search (MCTS) algorithm in order to find
+     * the best move. This algorithm should be able to beat any Minimax-based AI.
+     * @param startTime Time at function call
+     * @return Best move according to MCTS algorithm
+     */
+    private static boolean getAIMove_MCTS(double startTime){
+        double timeForMove = GameTime / expectedMoves;
+        MonteCarloSearch monte = new MonteCarloSearch();
+        Board tempBoard = new Board(gameboard);
+        Move move = monte.findNextMove(tempBoard, 1);
+
+        Boolean ret = gameboard.applyMove(move.getPosition(), 1);
+
+        return ret;
+    }
+
+    /**
      * This algorithm recursively tests all possible lines
      * for the given move and returns the value of that move/line.
      * This algorithm also implements alpha beta pruning in order to save time
@@ -325,7 +355,7 @@ public class Game {
      * @param beta is the best value the minimizer can currently promise
      * @return score for that move/line.
      */
-    private static int minimax(Move move, Board copy, int d, boolean minimax, int alpha, int beta, double startTime) {
+    private static int minimax(Move move, Board copy, int d, boolean minimax, int alpha, int beta, double startTime, double timePerMove) {
         if((System.currentTimeMillis()/1000) - startTime > timePerMove) {
             return Integer.MIN_VALUE;
         }
@@ -346,7 +376,7 @@ public class Game {
          // System.out.println("C Moves to check at depth" + d +": " + moves.size());
           while(!moves.isEmpty()){
               int pos = moves.peek().getPosition();
-              int eval = minimax(moves.remove(), tempBoard, d-1, false, alpha, beta, startTime);
+              int eval = minimax(moves.remove(), tempBoard, d-1, false, alpha, beta, startTime, timePerMove);
              // System.out.printf("C Testing position (%d) with score %d \n", pos, eval);
               maxEval = Math.max(maxEval, eval);
               alpha = Math.max(alpha, maxEval);
@@ -359,7 +389,7 @@ public class Game {
            //System.out.println("Moves to check at depth" + d +": " + moves.size());
             while(!moves.isEmpty()){
                 int pos = moves.peek().getPosition();
-                int eval = minimax(moves.remove(), tempBoard, d-1, true, alpha, beta, startTime);
+                int eval = minimax(moves.remove(), tempBoard, d-1, true, alpha, beta, startTime, timePerMove);
                // System.out.printf("C Testing position (%d) with score %d \n", pos, eval);
                 minEval = Math.min(minEval, eval);
                 beta = Math.min(minEval, beta);

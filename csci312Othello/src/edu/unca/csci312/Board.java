@@ -690,9 +690,9 @@ public class Board {
        if(gameOver(currentBoard)){
            int blackP = currentBoard.getBlackPieces();
            int whiteP = currentBoard.getWhitePieces();
-           if(Game.getWinner(blackP, whiteP) == AIColor){
+           if(Game.getWinner(blackP, whiteP, true) == AIColor){
                score += 99999;
-           }else if(Game.getWinner(blackP, whiteP) == playerColor){
+           }else if(Game.getWinner(blackP, whiteP, true) == playerColor){
                score -= 99999;
            }
        }

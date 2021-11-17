@@ -1,8 +1,7 @@
-package MontyCarloAI;
+package MonteCarloAI;
 
 import edu.unca.csci312.*;
 
-import java.util.Arrays;
 import java.util.*;
 
 public class State {
@@ -11,13 +10,15 @@ public class State {
     private int player; // 1 or -1;
     private int visitCount;
     private double winScore;
+    private Move move_to_state;
 
      // constructors
-    public State(Board board, int player){
+    public State(Move move, Board board, int player){
         this.board = board;
         this.player = player;
         this.visitCount = 0;
         this.winScore = 0;
+        this.move_to_state = move;
     }
 
      // getters and setters
@@ -40,6 +41,9 @@ public class State {
     }
     public void setVisitCount(int visitCount){
         this.visitCount = visitCount;
+    }
+    public void incrementVisitCount(){
+        this.visitCount++;
     }
 
     public double getWinScore(){
@@ -65,8 +69,9 @@ public class State {
         PriorityQueue<Move> moves = this.board.generateMoves(color);
         while(!moves.isEmpty()){
             Board tempBoard = new Board(this.board);
-            tempBoard.applyMove(moves.remove().getPosition(), color);
-            State state = new State(tempBoard, this.player * -1);
+            Move tempMove = moves.remove();
+            tempBoard.applyMove(tempMove.getPosition(), color);
+            State state = new State(tempMove, tempBoard, this.player * -1);
             states.add(state);
         }
         return states;
@@ -87,5 +92,10 @@ public class State {
             move = it.next();
         }
         this.board.applyMove(move.getPosition(), color);
+    }
+
+    public void addWinScore(int winscore) {this.winScore += winscore;}
+    public Move getMove_to_state(){
+        return this.move_to_state;
     }
 }

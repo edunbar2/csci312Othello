@@ -1,4 +1,4 @@
-package MontyCarloAI;
+package MonteCarloAI;
 
 import java.util.Collections;
 import java.util.Comparator;
