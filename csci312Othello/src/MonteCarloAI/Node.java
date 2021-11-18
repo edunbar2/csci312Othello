@@ -1,6 +1,7 @@
 package MonteCarloAI;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Random;
 
 public class Node {
@@ -53,6 +54,15 @@ public class Node {
     }
     public ArrayList<Node> getChildren(){
         return this.children;
+    }
+
+    public void generateChildren(){
+        ArrayList<State> states = this.state.getPossibleStates();
+        Iterator<State> it = states.iterator();
+        while(it.hasNext()){
+            Node childNode = new Node(it.next(), this);
+            this.children.add(childNode);
+        }
     }
 
     public Node getRandomChildNode() {

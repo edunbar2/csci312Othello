@@ -715,7 +715,7 @@ public class Board {
         if(tempBlack.remove().isPass() && tempWhite.remove().isPass())
             endGame = true;
         // if(playerTimer >= 90.0 || opponentTimer >= 90.0)
-        //endGame = true;
+        // endGame = true;
 
         return endGame;
     }

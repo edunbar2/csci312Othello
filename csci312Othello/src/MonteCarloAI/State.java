@@ -87,11 +87,13 @@ public class State {
         Iterator<Move> it = moves.iterator();
         Random ran = new Random();
         int moveNumber = ran.nextInt(moves.size());
-        Move move = new Move("P");
+        Move move = it.next();
         for(int i = 0; i < moveNumber; i++){
             move = it.next();
         }
         this.board.applyMove(move.getPosition(), color);
+        //debugging purposes
+        //this.board.printBoard();
     }
 
     public void addWinScore(int winscore) {this.winScore += winscore;}

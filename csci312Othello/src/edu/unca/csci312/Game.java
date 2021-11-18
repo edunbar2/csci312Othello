@@ -22,6 +22,7 @@ public class Game {
     public static int opponentColor;
     public static double playerTimer;
     public static double opponentTimer;
+    public static int movesmade;
 
     public static void main(String[] args) {
         runGame();
@@ -31,6 +32,7 @@ public class Game {
     public static void runGame() {
         playerTimer = 0.0;
         opponentTimer = 0.0;
+        movesmade = 0;
         //timer for individual moves
         double moveTime;
         Random ran = new Random();
@@ -332,11 +334,17 @@ public class Game {
      * @return Best move according to MCTS algorithm
      */
     private static boolean getAIMove_MCTS(double startTime){
+        movesmade++;
         double timeForMove = GameTime / expectedMoves;
         MonteCarloSearch monte = new MonteCarloSearch();
         Board tempBoard = new Board(gameboard);
-        Move move = monte.findNextMove(tempBoard, 1);
-
+        Move move;
+        if(movesmade < 2)
+            move = gameboard.generateMoves(1).remove();
+        else {
+            move = monte.findNextMove(tempBoard, 1);
+        }
+        System.out.println("C playing move: " + move.printMove());
         Boolean ret = gameboard.applyMove(move.getPosition(), 1);
 
         return ret;

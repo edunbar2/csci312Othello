@@ -10,10 +10,11 @@ package MonteCarloAI;
 import edu.unca.csci312.*;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class MonteCarloSearch {
     private static final int WINSCORE = 10;
-    private static final int endTime = 600 / 70;
+    private static final double endTime = 600.0 / 70.0;
     private int level;
     private int opponent; //1 or -1
 
@@ -34,9 +35,11 @@ public class MonteCarloSearch {
         Tree tree = new Tree(currentBoard, player);
         Node rootNode = tree.getRoot();
         rootNode.getState().setBoard(currentBoard);
-        rootNode.getState().setPlayer(opponent);
-        double startTime = System.currentTimeMillis()/1000;
-        while(((System.currentTimeMillis()/1000) - startTime)/1000 < endTime){
+        rootNode.getState().setPlayer(player);
+        rootNode.generateChildren();
+        double startTime = System.currentTimeMillis()/1000.0;
+        while((((System.currentTimeMillis()/1000.0) - startTime)) < endTime){
+           // System.out.println("C Time: " + (System.currentTimeMillis()/1000 - startTime));
             Node promisingNode = selectPromisingNode(rootNode);
             if(!Board.gameOver(promisingNode.getState().getBoard()))
                 expandNode(promisingNode);
@@ -75,13 +78,14 @@ public class MonteCarloSearch {
         int boardStatus = 0;
         if(Board.gameOver(tempState.getBoard())) //if game over set status to winning side
             boardStatus = Game.getWinner(tempState.getBoard().getBlackPieces(), tempState.getBoard().getWhitePieces(), true);
-        while(Board.gameOver(tempState.getBoard())){
+        while(!Board.gameOver(tempState.getBoard())){
             tempState.setPlayer(tempState.getPlayer() * -1);
             tempState.randomPlay();
             if(Board.gameOver(tempState.getBoard())) //if game over set status to winning side
                 boardStatus = Game.getWinner(tempState.getBoard().getBlackPieces(), tempState.getBoard().getWhitePieces(), true);
 
         }
+        //tempState.getBoard().printBoard();
         return boardStatus; //return winner of game
     }
 
@@ -91,14 +95,21 @@ public class MonteCarloSearch {
      */
     private void expandNode(Node promisingNode) {
         ArrayList<State> possibleStates = promisingNode.getState().getPossibleStates();
-        possibleStates.forEach(state -> {
+        Iterator<State> it = possibleStates.iterator();
+        while(it.hasNext()) {
+            State state = it.next();
             Node newNode = new Node(state);
             newNode.setParent(promisingNode);
             newNode.getState().setPlayer(newNode.getState().getPlayer() * -1);
             promisingNode.getChildren().add(newNode);
-        });
+        }
     }
 
+    /**
+     * This function checks the children of root node in order to find the best node to expand.
+     * @param rootNode
+     * @return
+     */
     private Node selectPromisingNode(Node rootNode){
         Node node = rootNode;
         while(node.getChildren().size() != 0){
