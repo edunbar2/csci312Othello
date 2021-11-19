@@ -36,7 +36,6 @@ public class MonteCarloSearch {
         Node rootNode = tree.getRoot();
         rootNode.getState().setBoard(currentBoard);
         rootNode.getState().setPlayer(player);
-        rootNode.generateChildren();
         double startTime = System.currentTimeMillis()/1000.0;
         while((((System.currentTimeMillis()/1000.0) - startTime)) < endTime){
            // System.out.println("C Time: " + (System.currentTimeMillis()/1000 - startTime));

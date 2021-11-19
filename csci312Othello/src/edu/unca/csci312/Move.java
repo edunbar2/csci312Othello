@@ -19,6 +19,8 @@ public class Move{
     }
 
     public String printMove() {
+        if(this.pass)
+            return "P";
         String ret = "";
         int pipe = position;
         int c = Integer.parseInt(Integer.toString(pipe).substring(1));

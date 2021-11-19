@@ -6,10 +6,10 @@ import java.util.Comparator;
 public class UCT {
 
 
-    public static double UCTValue(int totalVisit, double nodeWinSocre, int nodeVisit){
+    public static double UCTValue(int totalVisit, double nodeWinScore, int nodeVisit){
         if(nodeVisit == 0)
             return Integer.MAX_VALUE;
-        return ((double) nodeWinSocre / (double) nodeVisit)
+        return ((double) nodeWinScore / (double) nodeVisit)
                 + 1.41 * Math.sqrt(Math.log(totalVisit)/ (double) nodeVisit);
     }
 

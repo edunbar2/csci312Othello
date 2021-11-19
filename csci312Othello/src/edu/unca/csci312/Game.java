@@ -62,7 +62,11 @@ public class Game {
                 moveTime = System.currentTimeMillis()/1000.0;
                 PriorityQueue<Move> moves = gameboard.generateMoves(myColor);
                 //int move = getInput("C What move do you want to make?");
-                int move = moves.remove().getPosition();
+                int move = -2;
+                for(int i = 0; i < ran.nextInt(moves.size()); i++){
+                    move = moves.remove().getPosition();
+                }
+
                 if(move == -2){
                     Move node = new Move("P");
                     moves.add(node);
@@ -238,9 +242,9 @@ public class Game {
     public static int getWinner(int blackPieces, int whitePieces, boolean timing) {
 
         if (timing) {
-           if (playerTimer >= 90.0)
+           if (playerTimer >= GameTime)
               return opponentColor;
-            else if (opponentTimer >= 90.0)
+            else if (opponentTimer >= GameTime)
               return myColor;
         }
 
@@ -344,8 +348,13 @@ public class Game {
         else {
             move = monte.findNextMove(tempBoard, 1);
         }
-        System.out.println("C playing move: " + move.printMove());
+        String out = "";
+        if(opponentColor == Black)
+            out += "B ";
+        else out += "W ";
+        System.out.println(out + move.printMove());
         Boolean ret = gameboard.applyMove(move.getPosition(), 1);
+
 
         return ret;
     }

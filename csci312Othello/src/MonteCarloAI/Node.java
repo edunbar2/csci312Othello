@@ -6,7 +6,6 @@ import java.util.Random;
 
 public class Node {
 
-    private Node maxChild;
     private State state;
     private Node parent;
     private ArrayList<Node> children; //possible moves from this position.
@@ -28,7 +27,7 @@ public class Node {
     }
 
     public Node(Node node){
-        this.maxChild = node.maxChild;
+
         this.state = node.state;
         this.parent = node.parent;
         this.children = node.children;
@@ -72,7 +71,16 @@ public class Node {
     }
 
     public Node getMaxChild() {
-        return this.maxChild;
+        //find child with highest winscore
+        Node maxChild = null;
+        for (int i = 0; i < this.children.size(); i++) {
+            Node tempNode = this.children.get(i);
+            if(maxChild == null)
+                maxChild = this.children.get(i);
+            else if(maxChild.getState().getWinScore() < tempNode.getState().getWinScore()){
+                maxChild = tempNode;
+            }
+        }
+        return maxChild;
     }
-    public void setMaxChild(Node maxChild){this.maxChild = maxChild;}
 }
