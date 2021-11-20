@@ -61,11 +61,11 @@ public class Game {
             if (currentPlayer == player) {
                 moveTime = System.currentTimeMillis()/1000.0;
                 PriorityQueue<Move> moves = gameboard.generateMoves(myColor);
-                //int move = getInput("C What move do you want to make?");
-                int move = -2;
-                for(int i = 0; i < ran.nextInt(moves.size()); i++){
+                int move = getInput("C What move do you want to make?");
+                //int move = -2;
+                /*for(int i = 0; i < ran.nextInt(moves.size()); i++){
                     move = moves.remove().getPosition();
-                }
+                }*/
 
                 if(move == -2){
                     Move node = new Move("P");
@@ -344,16 +344,26 @@ public class Game {
         Board tempBoard = new Board(gameboard);
         Move move;
         if(movesmade < 2)
-            move = gameboard.generateMoves(1).remove();
-        else {
-            move = monte.findNextMove(tempBoard, 1);
+            move = gameboard.generateMoves(opponentColor).remove();
+        else if(gameboard.generateMoves(opponentColor).size() == 0){
+            move = new Move("P");
+        } else {
+            int color = 0;
+            if(opponentColor == Black)
+                color = 1;
+            else color = -1;
+            move = monte.findNextMove(tempBoard, color);
         }
-        String out = "";
-        if(opponentColor == Black)
-            out += "B ";
-        else out += "W ";
-        System.out.println(out + move.printMove());
+        if(!move.isPass()) {
+            String out = "";
+            if (opponentColor == Black)
+                out += "B ";
+            else out += "W ";
+            System.out.println(out + move.printMove());
+        }else
+            System.out.println("B");
         Boolean ret = gameboard.applyMove(move.getPosition(), 1);
+
 
 
         return ret;
