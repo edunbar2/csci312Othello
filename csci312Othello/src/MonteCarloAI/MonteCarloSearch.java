@@ -35,7 +35,10 @@ public class MonteCarloSearch {
         Tree tree = new Tree(currentBoard, player);
         Node rootNode = tree.getRoot();
         rootNode.getState().setBoard(currentBoard);
-        rootNode.getState().setPlayer(player);
+        if(Game.opponentColor == Game.Black)
+            rootNode.getState().setPlayer(player);
+        else
+            rootNode.getState().setPlayer(opponent);
         double startTime = System.currentTimeMillis()/1000.0;
         while((((System.currentTimeMillis()/1000.0) - startTime)) < endTime){
            // System.out.println("C Time: " + (System.currentTimeMillis()/1000 - startTime));
