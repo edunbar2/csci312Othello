@@ -14,7 +14,7 @@ import java.util.Iterator;
 
 public class MonteCarloSearch {
     private static final int WINSCORE = 10;
-    private static final double endTime = 600.0 / 70.0;
+    private static final double endTime = 600.0 / 35.0;
     private int level;
     private int opponent; //1 or -1
 

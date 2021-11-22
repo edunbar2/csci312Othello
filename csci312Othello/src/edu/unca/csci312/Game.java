@@ -360,8 +360,10 @@ public class Game {
                 out += "B ";
             else out += "W ";
             System.out.println(out + move.printMove());
-        }else
-            System.out.println("B");
+        }else {
+           if(opponentColor == Black) System.out.println("B");
+           else System.out.println("W");
+        }
         Boolean ret = gameboard.applyMove(move.getPosition(), 1);
 
 
