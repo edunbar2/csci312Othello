@@ -13,7 +13,7 @@ public class Node {
     public Node(State state){
 
         this.state = state;
-        children = new ArrayList<>();
+        children = new ArrayList<Node>();
        /* //initialize children array
         ArrayList<State> childStates = this.state.getPossibleStates();
         for(int i = 0; i < childStates.size(); i++){
@@ -24,6 +24,7 @@ public class Node {
     public Node(State state, Node parent){
         this.parent = parent;
         this.state = state;
+        this.children = new ArrayList<Node>();
     }
 
     public Node(Node node){
@@ -73,6 +74,9 @@ public class Node {
     public Node getMaxChild() {
         //find child with highest winscore
         Node maxChild = null;
+        if(this.children.size() == 0){
+            this.generateChildren();
+        }
         for (int i = 0; i < this.children.size(); i++) {
             Node tempNode = this.children.get(i);
             if(maxChild == null)

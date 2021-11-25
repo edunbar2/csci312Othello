@@ -51,6 +51,7 @@ public class Board {
 
     public Board(Board copy) {
         this.playerColor = copy.getPlayerColor();
+        this.AIColor = copy.getAIColor();
         this.movesMade = copy.movesMade;
         this.board = new int[100];
         System.arraycopy(copy.board,0, this.board, 0, 100);

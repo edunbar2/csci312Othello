@@ -14,7 +14,7 @@ public class State {
 
      // constructors
     public State(Move move, Board board, int player){
-        this.board = board;
+        this.board = new Board(board);
         this.player = player;
         this.visitCount = 0;
         this.winScore = 0;
@@ -59,8 +59,8 @@ public class State {
      * @return list of all possible States from current State
      */
     public ArrayList<State> getPossibleStates(){
-        int color = 0;
-        if(this.player == 1)
+        int color;
+        if(this.player == -1)
             color = this.board.getAIColor();
         else
             color = this.board.getPlayerColor();
@@ -71,15 +71,16 @@ public class State {
             Board tempBoard = new Board(this.board);
             Move tempMove = moves.remove();
             tempBoard.applyMove(tempMove.getPosition(), color);
-            State state = new State(tempMove, tempBoard, this.player * -1);
+            int newPlayer = this.player * -1;
+            State state = new State(tempMove, tempBoard, newPlayer);
             states.add(state);
         }
         return states;
     }
 
-    public void randomPlay(){
+    public State randomPlay(){
         int color = 0;
-        if(this.player == 1)
+        if(this.player == -1)
             color = this.board.getAIColor();
         else
             color = this.board.getPlayerColor();
@@ -91,9 +92,11 @@ public class State {
         for(int i = 0; i < moveNumber; i++){
             move = it.next();
         }
-        this.board.applyMove(move.getPosition(), color);
+        Board tempBoard = new Board(this.board);
+        tempBoard.applyMove(move.getPosition(), color);
         //debugging purposes
         //this.board.printBoard();
+        return new State(move, tempBoard, this.player * -1);
     }
 
     public void addWinScore(int winscore) {this.winScore += winscore;}

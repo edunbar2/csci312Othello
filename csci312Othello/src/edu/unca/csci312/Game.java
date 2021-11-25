@@ -23,6 +23,8 @@ public class Game {
     public static double playerTimer;
     public static double opponentTimer;
     public static int movesmade;
+    public static MonteCarloSearch monte;
+    public static int prevMove;
 
     public static void main(String[] args) {
         runGame();
@@ -61,11 +63,11 @@ public class Game {
             if (currentPlayer == player) {
                 moveTime = System.currentTimeMillis()/1000.0;
                 PriorityQueue<Move> moves = gameboard.generateMoves(myColor);
-                int move = getInput("C What move do you want to make?");
+                //int move = getInput("C What move do you want to make?");
                 //int move = -2;
-                /*for(int i = 0; i < ran.nextInt(moves.size()); i++){
-                    move = moves.remove().getPosition();
-                }*/
+                //for(int i = 0; i < ran.nextInt(moves.size()); i++){
+                    int move = moves.remove().getPosition();
+                //}
 
                 if(move == -2){
                     Move node = new Move("P");
@@ -73,6 +75,7 @@ public class Game {
                     move = 0;
                 }
                 moveMade = gameboard.applyMove(move, myColor);
+                prevMove = move;
                 moveTime = (System.currentTimeMillis()/1000.0)-moveTime;
                 playerTimer += moveTime; //add move time to timer
                 System.out.printf("C %d\n", gameboard.getBlackPieces());
@@ -338,21 +341,23 @@ public class Game {
      * @return Best move according to MCTS algorithm
      */
     private static boolean getAIMove_MCTS(double startTime){
-        movesmade++;
+
         double timeForMove = GameTime / expectedMoves;
-        MonteCarloSearch monte = new MonteCarloSearch();
+        if(opponentColor == Black)
+        if(movesmade == 0 && monte == null)
+            monte = new MonteCarloSearch(gameboard);
+
+        movesmade++;
         Board tempBoard = new Board(gameboard);
         Move move;
-        if(movesmade < 2)
-            move = gameboard.generateMoves(opponentColor).remove();
-        else if(gameboard.generateMoves(opponentColor).size() == 0){
+        if(gameboard.generateMoves(opponentColor).size() == 0){
             move = new Move("P");
         } else {
             int color = 0;
             if(opponentColor == Black)
                 color = 1;
             else color = -1;
-            move = monte.findNextMove(tempBoard, color);
+            move = monte.findNextMove(tempBoard, prevMove);
         }
         if(!move.isPass()) {
             String out = "";

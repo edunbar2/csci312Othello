@@ -16,33 +16,48 @@ public class MonteCarloSearch {
     private static final int WINSCORE = 10;
     private static final double endTime = 600.0 / 35.0;
     private int level;
-    private int opponent; //1 or -1
+    private int player; //1 or -1
+    private static Tree gameTree;
+    private Node currentNode;
 
-    public MonteCarloSearch(){
-        this.opponent = 0;
+    public MonteCarloSearch(Board currentBoard){
+        if(Game.opponentColor == Game.White)
+            this.player = 1;
+        else this.player = -1;
         this.level = 0;
+        gameTree = new Tree(currentBoard, player);
+        State rootState = new State(null, currentBoard, player);
+        Node rootNode = new Node(rootState);
+        gameTree.setRoot(rootNode);
+        currentNode = rootNode;
+
     }
 
     /**
      * This function powers the MCTS algorithm, following the selection, expansion
      * simulation, and backpropagation pattern.
-     * @param currentBoard
-     * @param player
+     * @param currentBoard Current board in the game. This board is used to generate possible moves and to determine where the game is in relation to the game tree.
+     * @param movePlayed move played to get to position in tree. This move is used to determine what position in the tree the game is at.
      * @return
      */
-    public Move findNextMove(Board currentBoard, int player){
-        opponent = player * -1;
-        Tree tree = new Tree(currentBoard, player);
-        Node rootNode = tree.getRoot();
-        rootNode.getState().setBoard(currentBoard);
-        if(Game.opponentColor == Game.Black)
-            rootNode.getState().setPlayer(player);
-        else
-            rootNode.getState().setPlayer(opponent);
+    public Move findNextMove(Board currentBoard, int movePlayed) {
+        //find current position in tree
+        if (currentNode.getState().getMove_to_state() != null){ //if not first move
+            if (currentNode.getChildren().size() == 0) { //check if children have been generated
+                currentNode.generateChildren();
+            }
+            ArrayList<Node> currentChildren = currentNode.getChildren();
+            for(int i = 0; i < currentChildren.size(); i++) { //check which move was played and pick corresponding node in tree
+                if (currentChildren.get(i).getState().getMove_to_state().getPosition() == movePlayed){
+                    currentNode = currentChildren.get(i);
+                    break;
+                }//if all nodes return false then move was a Pass, board did not change.
+            }
+        }
         double startTime = System.currentTimeMillis()/1000.0;
         while((((System.currentTimeMillis()/1000.0) - startTime)) < endTime){
            // System.out.println("C Time: " + (System.currentTimeMillis()/1000 - startTime));
-            Node promisingNode = selectPromisingNode(rootNode);
+            Node promisingNode = selectPromisingNode(currentNode);
             if(!Board.gameOver(promisingNode.getState().getBoard()))
                 expandNode(promisingNode);
             Node nodeToExplore = promisingNode;
@@ -53,8 +68,8 @@ public class MonteCarloSearch {
             backPropagate(nodeToExplore, playoutResult);
         }
 
-        Node winnderNode = rootNode.getMaxChild();
-        tree.setRoot(winnderNode);
+        Node winnderNode = currentNode.getMaxChild();
+        currentNode = winnderNode;
         return winnderNode.getState().getMove_to_state();
     }
 
@@ -81,8 +96,7 @@ public class MonteCarloSearch {
         if(Board.gameOver(tempState.getBoard())) //if game over set status to winning side
             boardStatus = Game.getWinner(tempState.getBoard().getBlackPieces(), tempState.getBoard().getWhitePieces(), true);
         while(!Board.gameOver(tempState.getBoard())){
-            tempState.setPlayer(tempState.getPlayer() * -1);
-            tempState.randomPlay();
+            tempState = tempState.randomPlay();
             if(Board.gameOver(tempState.getBoard())) //if game over set status to winning side
                 boardStatus = Game.getWinner(tempState.getBoard().getBlackPieces(), tempState.getBoard().getWhitePieces(), true);
 
@@ -102,7 +116,6 @@ public class MonteCarloSearch {
             State state = it.next();
             Node newNode = new Node(state);
             newNode.setParent(promisingNode);
-            newNode.getState().setPlayer(newNode.getState().getPlayer() * -1);
             promisingNode.getChildren().add(newNode);
         }
     }
