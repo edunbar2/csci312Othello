@@ -42,7 +42,7 @@ public class MonteCarloSearch {
      */
     public Move findNextMove(Board currentBoard, int movePlayed) {
         //find current position in tree
-        if (currentNode.getState().getMove_to_state() != null){ //if not first move
+        if (currentNode.getState().getMove_to_state() != null || currentBoard.getAIColor() != Game.Black){ //if not first move
             if (currentNode.getChildren().size() == 0) { //check if children have been generated
                 currentNode.generateChildren();
             }
@@ -77,7 +77,7 @@ public class MonteCarloSearch {
         Node tempNode = nodeToExplore;
         while(tempNode != null){
             tempNode.getState().incrementVisitCount();
-            if(tempNode.getState().getPlayer() == playoutResult){
+            if(tempNode.getState().getBoard().getAIColor() == playoutResult){
                 tempNode.getState().addWinScore(WINSCORE);
             }
             tempNode = tempNode.getParent();

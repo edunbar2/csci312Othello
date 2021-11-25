@@ -54,6 +54,7 @@ public class Game {
             currentPlayer = player;
         else
             currentPlayer = opponent;
+        monte = new MonteCarloSearch(gameboard);
 
         while (!Board.gameOver(gameboard)) {
             System.out.printf("C Player time: %f\n", playerTimer);
@@ -63,10 +64,10 @@ public class Game {
             if (currentPlayer == player) {
                 moveTime = System.currentTimeMillis()/1000.0;
                 PriorityQueue<Move> moves = gameboard.generateMoves(myColor);
-                //int move = getInput("C What move do you want to make?");
+                int move = getInput("C What move do you want to make?");
                 //int move = -2;
                 //for(int i = 0; i < ran.nextInt(moves.size()); i++){
-                    int move = moves.remove().getPosition();
+                    //int move = moves.remove().getPosition();
                 //}
 
                 if(move == -2){
@@ -343,9 +344,6 @@ public class Game {
     private static boolean getAIMove_MCTS(double startTime){
 
         double timeForMove = GameTime / expectedMoves;
-        if(opponentColor == Black)
-        if(movesmade == 0 && monte == null)
-            monte = new MonteCarloSearch(gameboard);
 
         movesmade++;
         Board tempBoard = new Board(gameboard);
