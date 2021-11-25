@@ -65,7 +65,7 @@ public class MonteCarloSearch {
                 nodeToExplore = promisingNode.getRandomChildNode();
             }
             int playoutResult = simulateRandomPlayout(nodeToExplore);
-            backPropagate(nodeToExplore, playoutResult);
+            //backPropagate(nodeToExplore, playoutResult);
         }
 
         Node winnderNode = currentNode.getMaxChild();
@@ -91,7 +91,19 @@ public class MonteCarloSearch {
      */
     private int simulateRandomPlayout(Node node) {
         Node tempNode = new Node(node);
-        State tempState = tempNode.getState();
+       while(!Board.gameOver(tempNode.getState().getBoard())){
+           if(tempNode.getChildren().size() == 0) //node has not been generated before
+               tempNode.generateChildren(); //generate possible children of node
+
+           //pick random child and play move
+           tempNode = tempNode.getRandomChildNode();
+
+       }
+       int boardStatus = Game.getWinner(tempNode.getState().getBoard().getBlackPieces(), tempNode.getState().getBoard().getWhitePieces(), true);
+       backPropagate(tempNode, boardStatus);
+
+
+        /*State tempState = tempNode.getState();
         int boardStatus = 0;
         if(Board.gameOver(tempState.getBoard())) //if game over set status to winning side
             boardStatus = Game.getWinner(tempState.getBoard().getBlackPieces(), tempState.getBoard().getWhitePieces(), true);
@@ -100,7 +112,7 @@ public class MonteCarloSearch {
             if(Board.gameOver(tempState.getBoard())) //if game over set status to winning side
                 boardStatus = Game.getWinner(tempState.getBoard().getBlackPieces(), tempState.getBoard().getWhitePieces(), true);
 
-        }
+        }*/
         //tempState.getBoard().printBoard();
         return boardStatus; //return winner of game
     }
